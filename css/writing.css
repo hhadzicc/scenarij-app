@@ -1,44 +1,44 @@
-/* reset osnovnih stilova */
+/* Reset i stilovi [uslov: čisti layout, bez default margina] */
 * {
   box-sizing: border-box;
   margin: 0;
   padding: 0;
 }
-
 :root {
-  --bg: #f5f6fa;
-  --text: #333333;
-  --chip-bg: #eceef3;
-  --chip-shadow: 0 2px 6px rgba(0,0,0,0.05);
-  --brand: #5B3FFF;
-  --active-bg: #E9EEFF;
-  --save: #28a745;
-  --save-hover: #218838;
-  --paper: #ffffff;
-  --scene-orange: #D68A00;
+  --bg: #f5f6fa;                            /* [uslov] pozadina stranice */
+  --text: #333333;                          /* [uslov] osnovna boja teksta */
+  --chip-bg: #eceef3;                       /* [opcionalno] nijansa sive za dugmad u zaglavljju */
+  --chip-shadow: 0 2px 6px rgba(0,0,0,0.05);/* [uslov] sjena dugmadi (0,2,6,5%) */
+  --brand: #5B3FFF;                         /* [uslov] plava traka na aktivnoj sceni */
+  --active-bg: #E9EEFF;                     /* [uslov] svijetloplava pozadina aktivne scene */
+  --save: #28a745;                          /* [uslov] pozadina dugmeta Spasi */
+  --save-hover: #218838;                    /* [uslov] hover boja Spasi */
+  --paper: #ffffff;                         /* [uslov] boja papira editora */
+  --scene-orange: #D68A00;                  /* [uslov] boja naslova scene u editoru */
 }
 
 html,
 body {
-  height: 100%;
+  height: 100%;                               /* [opcionalno] da lakše kontrolišemo visinu */
 }
 
 body {
-  font-family: "Poppins", "Inter", sans-serif;
-  background: var(--bg);
+  font-family: "Poppins", "Inter", sans-serif; /* [uslov] */
+  background: var(--bg);                       /* [uslov] pozadina ide ova */
   color: var(--text);
-  line-height: 1.5;
+  line-height: 1.5;                            /* [opcionalno] bolja čitljivost teksta? */
 }
 
-/* gornji sticky header */
+
+
 .topbar {
-  position: sticky;
-  top: 0;
-  z-index: 100;
-  background: #fff;
-  border-bottom: 1px solid #e5e7eb;
-  padding: 12px 18px;
-  display: grid;
+  position: sticky;           /* [uslov] zaglavlje je sticky */
+  top: 0;                     /* [uslov] na vrhu stranice */
+  z-index: 100;               /* [opcionalno] da bude iznad sadržaja */
+  background: #fff;           /* [uslov] pozadina zaglavlja bijela */
+  border-bottom: 1px solid #e5e7eb; /* [opcionalno] tanka linija ispod */
+  padding: 12px 18px;         /* [opcionalno] */
+  display: grid;              /* [opcionalno] raspored 3 zone */
   grid-template-columns: 1fr auto 1fr;
   align-items: center;
   gap: 12px;
@@ -48,51 +48,51 @@ body {
   display: flex;
   gap: 10px;
   align-items: center;
-  min-width: 0;
+  min-width: 0;               /* [opcionalno] da se naslov lijepo reže */
 }
 
 .icon-btn {
   border: none;
   background: transparent;
-  padding: 8px;
-  border-radius: 10px;
-  cursor: pointer;
+  padding: 8px;               /* [opcionalno] */
+  border-radius: 10px;        /* [opcionalno]  */
+  cursor: pointer;            /* [opcionalno] exp */
 }
 
 .icon-btn:hover {
-  background: #f3f4f6;
+  background: #f3f4f6;        /* [opcionalno] hovera malo */
 }
 
 .project-title {
-  font-size: 18px;
-  font-weight: 700;
-  color: #111827;
-  white-space: nowrap;
-  overflow: hidden;
+  font-size: 18px;            /* [opcionalno] */
+  font-weight: 700;           /* [opcionalno] bold */
+  color: #111827;           /* [opcionalno] text tamniji*/
+  white-space: nowrap;        /* [opcionalno] da ide u jedan red */
+  overflow: hidden;           /* [opcionalno] elipsa umjesto preloma */
   text-overflow: ellipsis;
 }
 
 .topbar-center {
   display: flex;
   justify-content: center;
-  flex-wrap: nowrap;
+  flex-wrap: nowrap;          /* [uslov] normalno ne prelomi, prelomi ispod 750px */
   gap: 10px;
 }
 
 .chip {
-  text-transform: uppercase;
+  text-transform: uppercase;        /* [uslov] tekst dugmadi velikim slovima */
   font-weight: 600;
   font-size: 13px;
   padding: 10px 14px;
-  background: var(--chip-bg);
+  background: var(--chip-bg);       /* [uslov] siva pozadina dugmeta */
   border: none;
-  border-radius: 999px;
-  box-shadow: var(--chip-shadow);
+  border-radius: 999px;             /* [uslov] zaobljene ivice */
+  box-shadow: var(--chip-shadow); /* [uslov] sjena (0,2,6,5%) */
   cursor: pointer;
 }
 
 .chip:hover {
-  background: #f0f0f0;
+  background: #f0f0f0;        /* [uslov] promjena boje na hover */
 }
 
 .topbar-right {
@@ -101,40 +101,42 @@ body {
 }
 
 .save-btn {
-  text-transform: uppercase;
+  text-transform: uppercase;  /* [opcionalno] kao sa ostalim dugmadima */
   font-weight: 700;
   padding: 10px 16px;
   border: none;
-  border-radius: 12px;
-  background: var(--save);
+  border-radius: 12px;        /* [opcionalno] zaobljenje kao na slici nesot*/
+  background: var(--save);    /* [uslov] #28a745 */
   color: #fff;
   cursor: pointer;
-  transition: background-color 0.2s ease;
+  transition: background-color 0.2s ease; /* [uslov] promjena boje 0.2s */
 }
 
 .save-btn:hover {
-  background: var(--save-hover);
+  background: var(--save-hover); /* [uslov] #218838 na hover */
 }
 
-/* glavni layout: sidebar + editor */
+/* ============= LAYOUT ============= */
+
 .layout {
-  display: flex;
+  display: flex;              /* [uslov] sidebar + editor u koloni */
   align-items: flex-start;
-  gap: 18px;
-  max-width: 1200px;
+  gap: 18px;                  /* [opcionalno] razmak između sidebar-a i editora */
+  max-width: 1200px;          /* [opcionalno] */
   margin: 18px auto;
-  padding: 0 16px 28px;
+  padding: 0 16px 28px;       /* [opcionalno] i margine su isto opt*/
 }
 
-/* sidebar sa scenama */
+/* Sidebar */
+
 .sidebar {
-  width: 250px;
-  flex-shrink: 0;
-  background: #fff;
-  border: 1px solid #e5e7eb;
-  border-radius: 14px;
-  padding: 16px;
-  box-shadow: 0 4px 16px rgba(0,0,0,0.06);
+  width: 250px;                                 /* [uslov] fiksna širina sidebar-a */
+  flex-shrink: 0;                               /* [opcionalno] da se ne sužava */
+  background: #fff;                           /* [opcionalno] kao kartica stil */
+  border: 1px solid #e5e7eb;                  /* [opcionalno] okvir 1pixel */
+  border-radius: 14px;                          /* [opcionalno] zaobljenje */
+  padding: 16px;                                /* [opcionalno] unutrašnji razmak */
+  box-shadow: 0 4px 16px rgba(0,0,0,0.06);    /* [opcionalno] mala sjena */
 }
 
 .sidebar-title {
@@ -144,39 +146,39 @@ body {
 }
 
 .scene-count {
-  color: #6b7280;
+  color: #6b7280;             /* [opcionalno]*/
   font-weight: 600;
 }
 
 .scene-list {
-  list-style: none;
+  list-style: none;           /* [opcionalno] uklanjanje brojeva liste */
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 10px;                  /* [opcionalno] ovo je razmak između scena */
 }
 
 .scene-item {
-  border: 1px solid #e5e7eb;
-  border-radius: 12px;
+  border: 1px solid #e5e7eb;  /* [opcionalno] okvir scene */
+  border-radius: 12px;        /* [uslov] zaobljen rub svakog elementa liste */
   padding: 10px 12px 8px 12px;
   background: #fff;
-  position: relative;
+  position: relative;         /* [uslov] zbog pseudo-elementa trake */
 }
 
 .scene-item.active {
-  background: var(--active-bg);
-  border-color: #dbe1ff;
+  background: var(--active-bg); /* [uslov] svijetloplava pozadina aktivne scene */
+  border-color: #dbe1ff;        /* [opcionalno] malo plavlji okvir */
 }
 
-.scene-item.active::before {
-  content: "";
+.scene-item.active::before {/* [PROBLEM] kao trebalo bi malo unutra ili vise zaoblit ali ne smije unutra zbog uslova zadatka*/
+  content: "";                /* [uslov] plava traka na lijevom rubu */
   position: absolute;
   left: 0;
   top: 0;
   bottom: 0;
   width: 4px;
-  border-radius: 18px 0 0 18px;
-  background: var(--brand);
+  border-radius: 18px 0 0 18px; /* [opcionalno] zaobljenje trake */
+  background: var(--brand);     /* [uslov] #5B3FFF */
 }
 
 .scene-main {
@@ -192,7 +194,7 @@ body {
 
 .scene-title {
   color: #111827;
-  white-space: nowrap;
+  white-space: nowrap;        /* [opcionalno] da ne prelazi u više redova */
   overflow: hidden;
   text-overflow: ellipsis;
 }
@@ -200,62 +202,68 @@ body {
 .scene-pages {
   font-size: 12px;
   color: #6b7280;
-  margin-top: 4px;
+  margin-top: 4px;            /* [uslov] prikaz ispod naslova u istom <li> */
 }
 
-/* editor dio */
+/* Editor */
+
 .editor-wrap {
-  flex: 1 1 auto;
+  flex: 1 1 auto;             /* [opcionalno] da editor zauzima ostatak širine */
   min-width: 0;
 }
 
 .editor-paper {
-  background: var(--paper);
-  border-radius: 18px;
-  box-shadow: 0 24px 60px rgba(0,0,0,0.10);
-  padding: 48px 64px;
-  border: 1px solid #e9eef5;
-  max-width: 900px;
-  margin: 0 auto;
-  font-family: "Courier Prime", "Courier New", monospace;
+  background: var(--paper);   /* [uslov] “boja papira” #fff */
+  border-radius: 18px;        /* [uslov] blago zaobljene ivice */
+  box-shadow: 0 24px 60px rgba(0,0,0,0.10); /* [uslov] sjena slična slici */
+  padding: 48px 64px;         /* [uslov] margine “papira” (slobodan izbor) */
+  border: 1px solid #e9eef5;  /* [opcionalno] malo okvira 1px kao za scene Q */
+  max-width: 900px;           /* [opcionalno]*/
+  margin: 0 auto;             /* [opcionalno] centriranje papira */
+  font-family: "Courier Prime", "Courier New", monospace; /* [uslov] font scenarija */
   line-height: 1.5;
 }
 
+/* Naslov scene */
+
 .scene-heading {
-  font-family: "Courier Prime", "Courier New", monospace;
-  color: var(--scene-orange);
-  text-transform: uppercase;
-  font-size: 20px;
-  margin-bottom: 24px;
+  font-family: "Courier Prime", "Courier New", monospace; /* [uslov] isti font */
+  color: var(--scene-orange);  /* [uslov] #D68A00 */
+  text-transform: uppercase;   /* [uslov] velikim slovima */
+  font-size: 20px;             /* [opcionalno]*/
+  margin-bottom: 24px;         /* [opcionalno] ovo je razmak ispod slova*/
 }
+
+/* Standardni pasusi u scenariju */
 
 .editor-paper p {
-  margin-bottom: 1.5em;
-  font-size: 16px;
+  margin-bottom: 1.5em;        /* [uslov] razmak između pasusa 1.5em */
+  font-size: 16px;             /* [opcionalno] veličina fonta */
 }
 
-/* responzivni dio za manji ekran */
+/* ============= responzinost ============= */
+
 @media (max-width: 750px) {
   .layout {
-    flex-direction: column;
+    flex-direction: column;    /* [uslov] sidebar prelazi iz kolone u red */
   }
 
   .sidebar {
-    width: 100%;
-    order: -1;
+    width: 100%;               /* [uslov] sidebar iznad editora, puna širina */
+    order: -1;                 /* [opcionalno] stavlja sidebar iznad */
   }
 
   .topbar-center {
-    flex-wrap: wrap;
+    flex-wrap: wrap;           /* [uslov] dugmad se prelamaju u dva reda */
     gap: 8px;
   }
 
   .project-title {
-    font-size: 16px;
+    font-size: 16px;           /* [opcionalno] malo manji naslov na mobilnom */
   }
 
   .editor-paper {
-    padding: 28px 20px;
-    border-radius: 14px;
+    padding: 28px 20px;        /* [opcionalno]*/
+    border-radius: 14px;       /* [opcionalno] */
   }
 }
