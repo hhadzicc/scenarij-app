@@ -1,0 +1,145 @@
+*{
+ box-sizing:border-box;
+ margin:0;
+ padding:0;
+}
+
+body{
+ font-family:"Poppins","Inter",sans-serif;
+ background:#f5f6fa;
+ color:#333;
+}
+
+.topbar{
+ position:sticky;
+ top:0;
+ background:white;
+ padding:10px 16px;
+ display:flex;
+ justify-content:space-between;
+ align-items:center;
+ border-bottom:1px solid #ddd
+}
+
+.topbar-left{
+ display:flex;
+ gap:8px;
+ align-items:center
+}
+
+.icon-btn{
+ background:none;
+ border:0;
+ cursor:pointer
+}
+
+.topbar-center{
+ display:flex;
+ gap:8px;
+}
+
+.chip{
+ text-transform:uppercase;
+ padding:8px 12px;
+ background:#e3e3e3;
+ border-radius:20px;
+ border:0;
+ box-shadow:0 2px 6px rgba(0,0,0,0.05)
+}
+
+.chip:hover{
+ background:#f0f0f0
+}
+
+.save-btn{
+ background:#28a745;
+ color:white;
+ border:0;
+ padding:8px 14px;
+ border-radius:8px;
+ cursor:pointer;
+ transition:.2s
+}
+
+.save-btn:hover{
+ background:#218838
+}
+
+.layout{
+ display:flex;
+ gap:16px;
+ max-width:1200px;
+ margin:auto;
+ padding:20px
+}
+
+.sidebar{
+ width:250px;
+ background:white;
+ border:1px solid #ddd;
+ padding:14px;
+ border-radius:10px
+}
+
+.scene-list{
+ list-style:none;
+ display:flex;
+ flex-direction:column;
+ gap:8px
+}
+
+.scene-item{
+ background:white;
+ border:1px solid #ddd;
+ padding:10px;
+ border-radius:10px;
+ position:relative
+}
+
+.scene-item.active{
+ background:#E9EEFF;
+}
+
+.scene-item.active::before{
+ content:"";
+ position:absolute;
+ left:0;
+ top:0;
+ bottom:0;
+ width:4px;
+ background:#5B3FFF
+}
+
+.editor-wrap{
+ flex:1
+}
+
+.editor-paper{
+ background:white;
+ padding:40px 50px;
+ border-radius:14px;
+ box-shadow:0 20px 40px rgba(0,0,0,0.15);
+ font-family:"Courier Prime","Courier New",monospace
+}
+
+.scene-heading{
+ color:#D68A00;
+ text-transform:uppercase;
+ margin-bottom:20px
+}
+
+.editor-paper p{
+ margin-bottom:1.5em;
+}
+
+@media(max-width:750px){
+ .layout{
+  flex-direction:column
+ }
+ .sidebar{
+  width:100%
+ }
+ .topbar-center{
+  flex-wrap:wrap
+ }
+}
