@@ -11,6 +11,11 @@ body {
   color: #333333;
 }
 
+.section-title.blue { color: #2f3ea0; }
+.section-title.red { color: #b72b2b; }
+.section-title.green { color: #297b5a; }
+/* za dugmad ovoe klase iznad dodane */
+
 /* forma centrirana na stranici */
 .page-wrap {
   min-height: 100vh;
