@@ -14,7 +14,6 @@ body {
 .section-title.blue { color: #2f3ea0; }
 .section-title.red { color: #b72b2b; }
 .section-title.green { color: #297b5a; }
-/* za dugmad ovoe klase iznad dodane */
 
 /* forma centrirana na stranici */
 .page-wrap {
@@ -109,11 +108,7 @@ body {
   flex: 1;
 }
 
-/* inputi i select */
-.field-control input[type="text"],
-.field-control input[type="email"],
-.field-control input[type="number"],
-.field-control input[type="password"],
+.field-control input,
 .field-control select {
   width: 100%;
   padding: 10px 12px;
@@ -125,13 +120,14 @@ body {
   background: #ffffff;
 }
 
+
 .field-control input:focus,
 .field-control select:focus {
   border-color: #5B3FFF;
   box-shadow: 0 0 0 2px rgba(91, 63, 255, 0.15);
 }
 
-/* hint ispod passworda */
+/* HINT ispod passworda */
 .field-hint {
   margin-top: 4px;
   font-size: 12px;
@@ -151,7 +147,7 @@ body {
   height: 16px;
 }
 
-/* radio grupe */
+/* radio grupa */
 .radio-group {
   display: flex;
   flex-wrap: wrap;
@@ -171,7 +167,7 @@ body {
   height: 15px;
 }
 
-/* stil za dropdown strelicu */
+/* dropdown strelica */
 .field-control select {
   appearance: none;
   background-image:
@@ -209,7 +205,26 @@ body {
   transform: translateY(1px);
 }
 
-/* mobilni prikaz – labela iznad polja i polja punom širinom */
+/* account – plava linija */
+.section-account .field-control input,
+.section-account .field-control select {
+  border: 1.5px solid #C5D2FF;
+}
+
+/* security – crvena linija */
+.section-security .field-control input,
+.section-security .field-control select {
+  border: 1.5px solid #F7AFAF;
+}
+
+/* notifications – zelena linija */
+.section-notifications .field-control input,
+.section-notifications .field-control select {
+  border: 1.5px solid #81ddb8;
+}
+
+
+/* mobilni prikaz */
 @media (max-width: 750px) {
   .settings-form {
     padding: 20px 18px 24px;
