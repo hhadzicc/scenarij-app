@@ -1,4 +1,4 @@
-/* osnovni reset */
+/* reset osnovnih stilova */
 * {
   box-sizing: border-box;
   margin: 0;
@@ -7,11 +7,11 @@
 
 body {
   font-family: "Poppins", "Inter", sans-serif;
-  background-color: #f5f6fa;
+  background: #f5f6fa;
   color: #333333;
 }
 
-/* centriranje forme na stranici */
+/* forma centrirana na stranici */
 .page-wrap {
   min-height: 100vh;
   display: flex;
@@ -21,7 +21,7 @@ body {
 }
 
 .settings-form {
-  background-color: #ffffff;
+  background: #ffffff;
   max-width: 840px;
   width: 100%;
   border-radius: 18px;
@@ -29,7 +29,7 @@ body {
   padding: 28px 32px 32px;
 }
 
-/* header forme */
+/* header */
 .settings-header h1 {
   font-size: 26px;
   font-weight: 700;
@@ -41,8 +41,8 @@ body {
 .title-divider {
   border: none;
   border-top: 3px solid #5B3FFF;
-  width: 80%;
-  margin: 0 auto 12px;
+  width: 100%;
+  margin: 0 0 12px 0;
 }
 
 .settings-subtitle {
@@ -52,7 +52,7 @@ body {
   margin-bottom: 24px;
 }
 
-/* sekcije unutar forme */
+/* sekcije */
 .settings-section {
   border-radius: 14px;
   padding: 18px 20px 20px;
@@ -65,19 +65,18 @@ body {
   margin-bottom: 12px;
 }
 
-/* različite pozadine po sekcijama */
 .section-account {
-  background-color: #edf3ff;
+  background: #edf3ff;
   border: 1px solid #d5e1ff;
 }
 
 .section-security {
-  background-color: #ffecec;
+  background: #ffecec;
   border: 1px solid #f6c4c4;
 }
 
 .section-notifications {
-  background-color: #e9fff4;
+  background: #e9fff4;
   border: 1px solid #bfeedd;
 }
 
@@ -105,7 +104,7 @@ body {
   flex: 1;
 }
 
-/* tekstualna polja, broj, password, select */
+/* inputi i select */
 .field-control input[type="text"],
 .field-control input[type="email"],
 .field-control input[type="number"],
@@ -118,7 +117,7 @@ body {
   font-family: inherit;
   font-size: 14px;
   outline: none;
-  background-color: #ffffff;
+  background: #ffffff;
 }
 
 .field-control input:focus,
@@ -127,14 +126,14 @@ body {
   box-shadow: 0 0 0 2px rgba(91, 63, 255, 0.15);
 }
 
-/* hint tekst ispod passworda */
+/* hint ispod passworda */
 .field-hint {
   margin-top: 4px;
   font-size: 12px;
   color: #6b7280;
 }
 
-/* checkbox red */
+/* checkbox */
 .checkbox-row {
   display: flex;
   align-items: center;
@@ -147,7 +146,7 @@ body {
   height: 16px;
 }
 
-/* radio dugmad */
+/* radio grupe */
 .radio-group {
   display: flex;
   flex-wrap: wrap;
@@ -167,11 +166,12 @@ body {
   height: 15px;
 }
 
-/* dropdown */
+/* stil za dropdown strelicu */
 .field-control select {
   appearance: none;
-  background-image: linear-gradient(45deg, transparent 50%, #777 50%),
-                    linear-gradient(135deg, #777 50%, transparent 50%);
+  background-image:
+    linear-gradient(45deg, transparent 50%, #777 50%),
+    linear-gradient(135deg, #777 50%, transparent 50%);
   background-position: calc(100% - 14px) 50%, calc(100% - 9px) 50%;
   background-size: 6px 6px, 6px 6px;
   background-repeat: no-repeat;
@@ -204,7 +204,7 @@ body {
   transform: translateY(1px);
 }
 
-/* responzivnost: ispod 750px labele iznad polja */
+/* mobilni prikaz – labela iznad polja i polja punom širinom */
 @media (max-width: 750px) {
   .settings-form {
     padding: 20px 18px 24px;
@@ -212,11 +212,18 @@ body {
 
   .form-row {
     flex-direction: column;
+    align-items: stretch;
   }
 
   .form-label {
     flex: none;
+    width: 100%;
     padding-top: 0;
+    margin-bottom: 4px;
+  }
+
+  .field-control {
+    width: 100%;
   }
 
   .radio-group {
@@ -225,9 +232,5 @@ body {
 
   .form-actions {
     text-align: center;
-  }
-
-  .btn-primary {
-    width: 100%;
   }
 }
