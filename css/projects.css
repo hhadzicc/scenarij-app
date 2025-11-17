@@ -192,7 +192,12 @@ body {
     border: 1px solid #5B3FFF;
 }
 
-/* Badge za aktivan projekat – izgled bliži slici iz zadatka */
+/* Završena kartica */
+.project-card.completed {
+    border: 1px solid #28a745;
+}
+
+/* Badge za aktivan projekat */
 .active-badge {
     position: absolute;
     top: 20px;
@@ -203,7 +208,19 @@ body {
     border-radius: 12px;
     font-size: 12px;
     font-weight: 600;
+}
 
+/* Badge za završen projekat */
+.completed-badge {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    background-color: #d4edda;
+    color: #28a745;
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 600;
 }
 
 .project-title {
@@ -299,5 +316,25 @@ body {
 
     .btn-new-project {
         width: 100%;
+    }
+}
+
+/* Responzivnost ispod 500px */
+@media (max-width: 500px) {
+    /* Sakrivanje kartica sa statusom "završeno" */
+    .project-card.completed {
+        display: none;
+    }
+
+    /* Kartice postaju kvadratne */
+    .project-card {
+        aspect-ratio: 1 / 1;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+    }
+
+    .project-card.new-project {
+        aspect-ratio: 1 / 1;
     }
 }
