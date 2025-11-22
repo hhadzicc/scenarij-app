@@ -12,7 +12,6 @@
 <body>
   <header class="topbar">
     <div class="topbar-left">
-      <!-- ikonica strelice kao SVG -->
       <button class="icon-btn" aria-label="Nazad">
         <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true">
           <path d="M15 18l-6-6 6-6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
@@ -33,9 +32,37 @@
     </div>
   </header>
 
+  <!-- TOOLBAR ZA METODE MODULA -->
+  <div class="toolbar">
+    <div class="toolbar-section">
+      <button class="toolbar-btn" id="btnBold">Bold</button>
+      <button class="toolbar-btn" id="btnItalic">Italic</button>
+      <button class="toolbar-btn" id="btnUnderline">Underline</button>
+    </div>
+    
+    <div class="toolbar-separator"></div>
+    
+    <div class="toolbar-section">
+      <button class="toolbar-btn" id="btnBrojRijeci">Broj riječi</button>
+      <button class="toolbar-btn" id="btnUloge">Uloge</button>
+      <button class="toolbar-btn" id="btnPogresnaUloga">Pogrešne uloge</button>
+    </div>
+    
+    <div class="toolbar-separator"></div>
+    
+    <div class="toolbar-section">
+      <button class="toolbar-btn" id="btnBrojLinija">Broj linija (uloga)</button>
+      <button class="toolbar-btn" id="btnScenarijUloge">Scenarij uloge</button>
+      <button class="toolbar-btn" id="btnGrupisiUloge">Grupisi uloge</button>
+    </div>
+  </div>
+
+  <!-- DIV ZA PORUKE -->
+  <div id="poruke"></div>
+
   <main class="layout">
     <aside class="sidebar">
-      <h2 class="sidebar-title">Scene <span class="scene-count">(12)</span></h2>
+      <h2 class="sidebar-title">Scene <span class="scene-count">(3)</span></h2>
 
       <ol class="scene-list">
         <li class="scene-item active">
@@ -64,33 +91,76 @@
       </ol>
     </aside>
 
-    <!-- EDITOR dio  -->
-<section class="editor-wrap">
-  <article class="editor-paper">
-    <!-- Naslov ima spec stil -->
-    <h3 class="scene-heading">INT. SMALL APARTMENT – EVENING</h3>
+    <!-- EDITOR dio sa contenteditable -->
+    <section class="editor-wrap">
+      <article class="editor-paper">
+<div id="divEditor" contenteditable="true">
 
-    <!-- random text ide [opcionalno] -->
-    <p>
-      The narrow apartment is quiet, lit only by the orange glow of a desk lamp.
-      Papers, sketches, and half-empty coffee cups clutter the table.
-      LANA (28), tired but focused, flips through her notebook.
-    </p>
+INT. KUHINJA LEJLINOG STANA - MORNING<br><br>
 
-    <p>
-      The sound of distant traffic hums through the window.
-      She pauses, stares at a blank page, then takes a slow breath — searching
-      for the right words. Her fingers tremble just slightly.
-    </p>
+LEJLA<br>
+(tiho)<br>
+Opet kasnim na predavanje... <br>
+Šta ako ovaj put profesor stvarno uradi prozivku?<br><br>
 
-    <p>
-      A soft knock at the door breaks the silence.
-      Lana freezes, unsure, then closes the notebook gently
-      and stands up.
-    </p>
-  </article>
-</section>
+AMIR<br>
+Smiri se, još imaš vremena. Tramvaj ide za pet minuta.<br><br>
 
+TIM<br>
+(s mobitelom u ruci)<br>
+Lejla, upravo sam dobio poruku da je laboratorijska vježba odgođena.<br><br>
+
+LEJLA<br>
+Ozbiljno? To je <b>najbolja vijest</b> danas.<br><br>
+
+TIM<br>
+Ali parcijala nije odgođena, samo vježbe.<br><br>
+
+TIN<br>
+Ti si uvijek previše opušten, Tim.<br><br>
+
+[U stanu nakratko nastaje tišina dok svi gledaju u sat na zidu.]<br><br>
+
+LEJLA<br>
+Dobro, hajde da ponovimo još jedan zadatak iz <i>Web tehnologija</i>.<br><br>
+
+Amir pali kuhalo za vodu i gleda kroz prozor, zamišljeno posmatra jutarnju maglu.<br><br>
+
+EXT. ULICA ISPRED FAKULTETA - DAY<br><br>
+
+Studenti užurbano prolaze ispred glavnog ulaza ETF-a, noseći ruksake i skripte.<br><br>
+
+TIM<br>
+Ako opet zaboraviš uploadovati spiralu na vrijeme, neću te više podsjećati.<br><br>
+
+LEJLA<br>
+Ma hoćeš, znam ja tebe.<br><br>
+
+TIM<br>
+(uz osmijeh)<br>
+Vidjećemo već večeras.<br><br>
+
+TIMM<br>
+Ne mogu vjerovati da sam ja pogrešno upisan u raspored.<br><br>
+
+Automobil trubi dok prelaze cestu prema fakultetu.<br><br>
+
+AMIR<br>
+Hajde, ljudi, zakasnićemo na uvodno predavanje.<br><br>
+
+INT. PREDAVAONICA ETF-A - AFTERNOON<br><br>
+
+Prazna učionica čeka prve studente.<br>
+Na projektoru stoji naslov: "[WEB TEHNOLOGIJE - SPIRALA 2]".<br>
+
+</div>
+      </article>
+    </section>
   </main>
+
+  <!-- JS modula -->
+  <script src="../js/EditorTeksta.js"></script>
+<script src="../js/editor.js"></script>
+
 </body>
 </html>

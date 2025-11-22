@@ -4,6 +4,7 @@
   margin: 0;
   padding: 0;
 }
+
 :root {
   --bg: #f5f6fa;                            /* [uslov] pozadina stranice */
   --text: #333333;                          /* [uslov] osnovna boja teksta */
@@ -29,7 +30,7 @@ body {
   line-height: 1.5;                            /* [opcionalno] bolja čitljivost teksta? */
 }
 
-
+/* ============= TOPBAR ============= */
 
 .topbar {
   position: sticky;           /* [uslov] zaglavlje je sticky */
@@ -66,7 +67,7 @@ body {
 .project-title {
   font-size: 18px;            /* [opcionalno] */
   font-weight: 700;           /* [opcionalno] bold */
-  color: #111827;           /* [opcionalno] text tamniji*/
+  color: #111827;             /* [opcionalno] text tamniji*/
   white-space: nowrap;        /* [opcionalno] da ide u jedan red */
   overflow: hidden;           /* [opcionalno] elipsa umjesto preloma */
   text-overflow: ellipsis;
@@ -87,7 +88,7 @@ body {
   background: var(--chip-bg);       /* [uslov] siva pozadina dugmeta */
   border: none;
   border-radius: 999px;             /* [uslov] zaobljene ivice */
-  box-shadow: var(--chip-shadow); /* [uslov] sjena (0,2,6,5%) */
+  box-shadow: var(--chip-shadow);   /* [uslov] sjena (0,2,6,5%) */
   cursor: pointer;
 }
 
@@ -116,6 +117,74 @@ body {
   background: var(--save-hover); /* [uslov] #218838 na hover */
 }
 
+/* ============= TOOLBAR ZA METODE ============= */
+
+.toolbar {
+  background: #fff;
+  border-bottom: 1px solid #e5e7eb;
+  padding: 14px 18px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+}
+
+.toolbar-section {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.toolbar-btn {
+  font-family: "Poppins", sans-serif;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 8px 12px;
+  background: var(--chip-bg);
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.toolbar-btn:hover {
+  background: #dfe2e8;
+  border-color: #9ca3af;
+}
+
+.toolbar-btn:active {
+  transform: scale(0.97);
+}
+
+.toolbar-separator {
+  width: 1px;
+  height: 24px;
+  background: #d1d5db;
+  margin: 0 4px;
+}
+
+/* ============= DIV ZA PORUKE ============= */
+
+#poruke {
+  max-width: 1200px;
+  margin: 18px auto 0;
+  padding: 0 16px;
+  font-size: 14px;
+  color: #374151;
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 16px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+  white-space: pre-wrap;
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+#poruke:empty {
+  display: none;
+}
+
 /* ============= LAYOUT ============= */
 
 .layout {
@@ -127,16 +196,16 @@ body {
   padding: 0 16px 28px;       /* [opcionalno] i margine su isto opt*/
 }
 
-/* Sidebar */
+/* ============= SIDEBAR ============= */
 
 .sidebar {
   width: 250px;                                 /* [uslov] fiksna širina sidebar-a */
   flex-shrink: 0;                               /* [opcionalno] da se ne sužava */
-  background: #fff;                           /* [opcionalno] kao kartica stil */
-  border: 1px solid #e5e7eb;                  /* [opcionalno] okvir 1pixel */
+  background: #fff;                             /* [opcionalno] kao kartica stil */
+  border: 1px solid #e5e7eb;                    /* [opcionalno] okvir 1pixel */
   border-radius: 14px;                          /* [opcionalno] zaobljenje */
   padding: 16px;                                /* [opcionalno] unutrašnji razmak */
-  box-shadow: 0 4px 16px rgba(0,0,0,0.06);    /* [opcionalno] mala sjena */
+  box-shadow: 0 4px 16px rgba(0,0,0,0.06);      /* [opcionalno] mala sjena */
 }
 
 .sidebar-title {
@@ -170,7 +239,7 @@ body {
   border-color: #dbe1ff;        /* [opcionalno] malo plavlji okvir */
 }
 
-.scene-item.active::before {/* [PROBLEM] kao trebalo bi malo unutra ili vise zaoblit ali ne smije unutra zbog uslova zadatka*/
+.scene-item.active::before {
   content: "";                /* [uslov] plava traka na lijevom rubu */
   position: absolute;
   left: 0;
@@ -205,7 +274,7 @@ body {
   margin-top: 4px;            /* [uslov] prikaz ispod naslova u istom <li> */
 }
 
-/* Editor */
+/* ============= EDITOR ============= */
 
 .editor-wrap {
   flex: 1 1 auto;             /* [opcionalno] da editor zauzima ostatak širine */
@@ -213,15 +282,26 @@ body {
 }
 
 .editor-paper {
-  background: var(--paper);   /* [uslov] “boja papira” #fff */
+  background: var(--paper);   /* [uslov] "boja papira" #fff */
   border-radius: 18px;        /* [uslov] blago zaobljene ivice */
   box-shadow: 0 24px 60px rgba(0,0,0,0.10); /* [uslov] sjena slična slici */
-  padding: 48px 64px;         /* [uslov] margine “papira” (slobodan izbor) */
+  padding: 48px 64px;         /* [uslov] margine "papira" (slobodan izbor) */
   border: 1px solid #e9eef5;  /* [opcionalno] malo okvira 1px kao za scene Q */
   max-width: 900px;           /* [opcionalno]*/
   margin: 0 auto;             /* [opcionalno] centriranje papira */
   font-family: "Courier Prime", "Courier New", monospace; /* [uslov] font scenarija */
   line-height: 1.5;
+}
+
+#divEditor {
+  outline: none;
+  min-height: 400px;
+}
+
+#divEditor:focus {
+  outline: 2px solid var(--brand);
+  outline-offset: 2px;
+  border-radius: 4px;
 }
 
 /* Naslov scene */
@@ -241,7 +321,7 @@ body {
   font-size: 16px;             /* [opcionalno] veličina fonta */
 }
 
-/* ============= responzinost ============= */
+/* ============= RESPONSIVNOST ============= */
 
 @media (max-width: 750px) {
   .layout {
@@ -265,5 +345,14 @@ body {
   .editor-paper {
     padding: 28px 20px;        /* [opcionalno]*/
     border-radius: 14px;       /* [opcionalno] */
+  }
+
+  .toolbar {
+    padding: 10px;
+  }
+
+  .toolbar-btn {
+    font-size: 11px;
+    padding: 6px 10px;
   }
 }
