@@ -113,6 +113,112 @@ let EditorTeksta = function (divRef) {
         return structure;
     };
 
+
+
+    const izgradiBlokove = () => {
+        const structure = analizirajStrukturu();
+
+        let blocks = [];
+        let sceneCounters = {};
+        let scenesOrder = [];
+        let currentScene = "SCENA BEZ NASLOVA";
+        let lastSigType = null;
+
+        const ensureScene = (title) => {
+            if (!sceneCounters[title]) {
+                sceneCounters[title] = { replikaCounter: 0, segmentCounter: 0 };
+                scenesOrder.push(title);
+            }
+        };
+
+        ensureScene(currentScene);
+        let currentBlock = null;
+        let currentRole = null;
+
+        for (let i = 0; i < structure.length; i++) {
+            let s = structure[i];
+
+            switch (s.type) {
+                case "sceneHeading":
+                    currentScene = s.content;
+                    ensureScene(currentScene);
+                    currentBlock = null;
+                    currentRole = null;
+                    lastSigType = "sceneHeading";
+                    break;
+
+                case "role": {
+                    ensureScene(currentScene);
+                    let counters = sceneCounters[currentScene];
+
+                    if (currentRole === s.content && blocks.length > 0 && currentBlock === blocks[blocks.length - 1]) {
+                        lastSigType = "role";
+                        break;
+                    }
+
+                    if (
+                        lastSigType === null ||
+                        lastSigType === "sceneHeading" ||
+                        lastSigType === "action"
+                    ) {
+                        counters.segmentCounter += 1;
+                    }
+
+                    counters.replikaCounter += 1;
+
+                    currentBlock = {
+                        scene: currentScene,
+                        role: s.content,
+                        lines: [],
+                        sceneReplikaIndex: counters.replikaCounter,
+                        segmentIndex: counters.segmentCounter
+                    };
+                    blocks.push(currentBlock);
+                    currentRole = s.content;
+                    lastSigType = "role";
+                    break;
+                }
+
+                case "speech":
+                    if (currentBlock) {
+                        currentBlock.lines.push(s.content);
+                        currentRole = s.role || currentBlock.role;
+                        lastSigType = "speech";
+                    } else {
+                        lastSigType = "action";
+                        currentRole = null;
+                    }
+                    break;
+
+                case "parenthetical":
+                    break;
+
+                case "action":
+                    currentBlock = null;
+                    currentRole = null;
+                    lastSigType = "action";
+                    break;
+
+                case "empty":
+                    currentBlock = null;
+                    currentRole = null;
+                    break;
+
+                default:
+                    break;
+            }
+        }
+
+        return {
+            blocks,
+            structure,
+            scenesOrder,
+            sceneCounters
+        };
+    };
+
+
+
     let dajBrojRijeci = function () {
         let charStyles = [];
 
@@ -251,16 +357,109 @@ let EditorTeksta = function (divRef) {
         return [...greske];
     };
 
+
+
     let brojLinijaTeksta = function (uloga) {
+        if (!uloga) return 0;
+      
+        const { blocks } = izgradiBlokove();
+
+        let total = 0;
+        blocks.forEach(b => {
+            if (b.role === uloga) {
+                total += b.lines.length;
+            }
+        });
+
+        return total;
     };
 
     let scenarijUloge = function (uloga) {
+        if (!uloga) return [];
+    
+        const { blocks } = izgradiBlokove();
+        let rezultat = [];
+
+        for (let i = 0; i < blocks.length; i++) {
+            let b = blocks[i];
+            if (b.role !== uloga) continue;
+
+            let prevBlock = null;
+            if (i - 1 >= 0) {
+                let pb = blocks[i - 1];
+                if (pb.scene === b.scene && pb.segmentIndex === b.segmentIndex) {
+                    prevBlock = pb;
+                }
+            }
+
+            let nextBlock = null;
+            if (i + 1 < blocks.length) {
+                let nb = blocks[i + 1];
+                if (nb.scene === b.scene && nb.segmentIndex === b.segmentIndex) {
+                    nextBlock = nb;
+                }
+            }
+
+            rezultat.push({
+                scena: b.scene,
+                pozicijaUTekstu: b.sceneReplikaIndex,
+                prethodni: prevBlock ? {
+                    uloga: prevBlock.role,
+                    linije: [...prevBlock.lines]
+                } : null,
+                trenutni: {
+                    uloga: b.role,
+                    linije: [...b.lines]
+                },
+                sljedeci: nextBlock ? {
+                    uloga: nextBlock.role,
+                    linije: [...nextBlock.lines]
+                } : null
+            });
+        }
+
+        return rezultat;
     };
 
     let grupisiUloge = function () {
+        const { blocks, scenesOrder } = izgradiBlokove();
+
+        let mapa = {};
+        let rezultat = [];
+
+        blocks.forEach(b => {
+            if (!mapa[b.scene]) mapa[b.scene] = {};
+            if (!mapa[b.scene][b.segmentIndex]) mapa[b.scene][b.segmentIndex] = [];
+
+            let lista = mapa[b.scene][b.segmentIndex];
+            if (!lista.includes(b.role)) {
+                lista.push(b.role);
+            }
+        });
+
+        scenesOrder.forEach(sceneTitle => {
+            const segs = mapa[sceneTitle];
+            if (!segs) return;
+
+            const segmentKeys = Object.keys(segs)
+                .map(x => parseInt(x, 10))
+                .sort((a, b) => a - b);
+
+            segmentKeys.forEach(segNum => {
+                rezultat.push({
+                    scena: sceneTitle,
+                    segment: segNum,
+                    uloge: segs[segNum]
+                });
+            });
+        });
+
+        return rezultat;
     };
 
     let formatirajTekst = function (komanda) {
+ 
+        return false;
     };
 
     return {
