@@ -113,8 +113,6 @@ let EditorTeksta = function (divRef) {
         return structure;
     };
 
-
-
     const izgradiBlokove = () => {
         const structure = analizirajStrukturu();
 
@@ -216,8 +214,6 @@ let EditorTeksta = function (divRef) {
             sceneCounters
         };
     };
-
-
 
     let dajBrojRijeci = function () {
         let charStyles = [];
@@ -357,11 +353,10 @@ let EditorTeksta = function (divRef) {
         return [...greske];
     };
 
-
-
     let brojLinijaTeksta = function (uloga) {
         if (!uloga) return 0;
-      
+        uloga = uloga.toUpperCase();
+
         const { blocks } = izgradiBlokove();
 
         let total = 0;
@@ -376,7 +371,8 @@ let EditorTeksta = function (divRef) {
 
     let scenarijUloge = function (uloga) {
         if (!uloga) return [];
-    
+        uloga = uloga.toUpperCase();
+
         const { blocks } = izgradiBlokove();
         let rezultat = [];
 
@@ -458,7 +454,6 @@ let EditorTeksta = function (divRef) {
     };
 
     let formatirajTekst = function (komanda) {
- 
         return false;
     };
 
