@@ -1,5 +1,7 @@
 let EditorTeksta = function (divRef) {
 
+    // ================= VALIDACIJA =================
+
     if (!divRef || divRef.tagName !== 'DIV') {
         throw new Error("Pogresan tip elementa!");
     }
@@ -7,6 +9,8 @@ let EditorTeksta = function (divRef) {
     if (divRef.getAttribute('contenteditable') !== 'true') {
         throw new Error("Neispravan DIV, ne posjeduje contenteditable atribut!");
     }
+
+    // ================= HELPERI ZA LINIJE I TIPOVE =================
 
     const parsirajLinije = () => {
         let rawText = divRef.innerText || "";
@@ -27,6 +31,7 @@ let EditorTeksta = function (divRef) {
         return trimmed.startsWith("(") && trimmed.endsWith(")");
     };
 
+    // format imena uloge: VELIKA slova (uključujući ČĆŽŠĐ) i razmaci, bez brojeva/interpunkcije
     const isRoleFormat = (line) => {
         let trimmed = line.trim();
         if (!trimmed) return false;
@@ -41,10 +46,13 @@ let EditorTeksta = function (divRef) {
         return true;
     };
 
+
+
     const analizirajStrukturu = () => {
         const lines = parsirajLinije();
         const structure = [];
 
+        // 1) osnovna klasifikacija
         for (let i = 0; i < lines.length; i++) {
             let raw = lines[i];
             let line = raw.trim();
@@ -57,18 +65,23 @@ let EditorTeksta = function (divRef) {
             } else if (isParenthetical(line)) {
                 type = "parenthetical";
             } else if (isRoleFormat(line)) {
+
+       
                 let isRoleContext = false;
 
                 for (let j = i + 1; j < lines.length; j++) {
                     let nextLine = lines[j];
                     let nextTrimmed = nextLine.trim();
 
-                    if (nextTrimmed === "") continue;
-                    if (isParenthetical(nextLine)) continue;
+                    if (nextTrimmed === "") continue;           // preskačemo prazne
+                    if (isParenthetical(nextLine)) continue;    // preskačemo (tiho) itd.
 
+                    // prva "značajna" linija ispod:
                     if (nextTrimmed === nextTrimmed.toUpperCase() || isSceneHeading(nextLine)) {
+                        // opet sve velikim ili nova scena → nije govor
                         isRoleContext = false;
                     } else {
+                        // nije prazna, nije parenthetical i nije sve velikim → govor
                         isRoleContext = true;
                     }
                     break;
@@ -88,6 +101,7 @@ let EditorTeksta = function (divRef) {
             });
         }
 
+        // 2) govor/akcija na osnovu currentRole
         let currentRole = null;
 
         for (let i = 0; i < structure.length; i++) {
@@ -105,6 +119,7 @@ let EditorTeksta = function (divRef) {
                     s.type = "action";
                 }
             } else if (s.type === "parenthetical") {
+                // ne prekida blok govora
             } else if (s.type === "empty") {
                 currentRole = null;
             }
@@ -113,6 +128,8 @@ let EditorTeksta = function (divRef) {
         return structure;
     };
 
+    // ================= BLOKOVI GOVORA I SEGMENTI =================
+
     const izgradiBlokove = () => {
         const structure = analizirajStrukturu();
 
@@ -120,7 +137,7 @@ let EditorTeksta = function (divRef) {
         let sceneCounters = {};
         let scenesOrder = [];
         let currentScene = "SCENA BEZ NASLOVA";
-        let lastSigType = null;
+        let lastSigType = null; // sceneHeading, role, speech, action
 
         const ensureScene = (title) => {
             if (!sceneCounters[title]) {
@@ -149,16 +166,21 @@ let EditorTeksta = function (divRef) {
                     ensureScene(currentScene);
                     let counters = sceneCounters[currentScene];
 
+
                     if (currentRole === s.content && blocks.length > 0 && currentBlock === blocks[blocks.length - 1]) {
+                        // nastavljamo postojeći blok, ne povećavamo brojač replika
                         lastSigType = "role";
+                        // currentBlock ostaje isti
                         break;
                     }
 
+                    // nova uloga ili blok je ranije prekinut (prazna linija/akcija)
                     if (
                         lastSigType === null ||
                         lastSigType === "sceneHeading" ||
                         lastSigType === "action"
                     ) {
+                        // nova uloga nakon sceneHeading ili akcijskog segmenta znci novi djijalog segment
                         counters.segmentCounter += 1;
                     }
 
@@ -189,6 +211,7 @@ let EditorTeksta = function (divRef) {
                     break;
 
                 case "parenthetical":
+                    // ne ulazi u lines i ne prekida segment ni blok
                     break;
 
                 case "action":
@@ -198,6 +221,7 @@ let EditorTeksta = function (divRef) {
                     break;
 
                 case "empty":
+                    // prazna linija prekida blok govora, ali ne prekida nužno dijalog-segment
                     currentBlock = null;
                     currentRole = null;
                     break;
@@ -214,6 +238,7 @@ let EditorTeksta = function (divRef) {
             sceneCounters
         };
     };
+
 
     let dajBrojRijeci = function () {
         let charStyles = [];
@@ -232,6 +257,7 @@ let EditorTeksta = function (divRef) {
 
                 node.childNodes.forEach(ch => traverse(ch, newStyles));
 
+                // nakon ovih elemenata dodajemo razmak kao granicu riječi
                 if (tag === "BR" || tag === "DIV" || tag === "P") {
                     charStyles.push({ char: " ", styles: [] });
                 }
@@ -243,6 +269,7 @@ let EditorTeksta = function (divRef) {
         const hasLetter = (txt) => /[A-Za-zČĆŽŠĐčćžšđ]/.test(txt);
 
         const isSeparator = (ch) => {
+            // granice riječi su: razmak/tab/newline, zarez, tačka
             return /[ \t\r\n,.]/.test(ch);
         };
 
@@ -281,6 +308,8 @@ let EditorTeksta = function (divRef) {
         };
     };
 
+    // ================= METODA: dajUloge =================
+
     let dajUloge = function () {
         const structure = analizirajStrukturu();
         let set = new Set();
@@ -295,6 +324,8 @@ let EditorTeksta = function (divRef) {
 
         return [...set];
     };
+
+    // ================= METODA: pogresnaUloga =================
 
     let pogresnaUloga = function () {
         const structure = analizirajStrukturu();
@@ -353,6 +384,8 @@ let EditorTeksta = function (divRef) {
         return [...greske];
     };
 
+    // ================= METODA: brojLinijaTeksta(uloga) =================
+
     let brojLinijaTeksta = function (uloga) {
         if (!uloga) return 0;
         uloga = uloga.toUpperCase();
@@ -368,6 +401,8 @@ let EditorTeksta = function (divRef) {
 
         return total;
     };
+
+    // ================= METODA: scenarijUloge(uloga) =================
 
     let scenarijUloge = function (uloga) {
         if (!uloga) return [];
@@ -417,6 +452,8 @@ let EditorTeksta = function (divRef) {
         return rezultat;
     };
 
+    // ================= METODA: grupisiUloge() =================
+
     let grupisiUloge = function () {
         const { blocks, scenesOrder } = izgradiBlokove();
 
@@ -453,9 +490,24 @@ let EditorTeksta = function (divRef) {
         return rezultat;
     };
 
+    // ================= METODA: formatirajTekst(komanda) =================
+
     let formatirajTekst = function (komanda) {
-        return false;
+        let sel = window.getSelection();
+        if (!sel || sel.rangeCount === 0) return false;
+
+        let range = sel.getRangeAt(0);
+        if (range.collapsed) return false;
+
+        let node = range.commonAncestorContainer;
+        if (node.nodeType === 3) node = node.parentNode;
+
+        if (!divRef.contains(node)) return false;
+
+        return document.execCommand(komanda, false, null);
     };
+
+    // ================= PUBLIC API =================
 
     return {
         dajBrojRijeci,
