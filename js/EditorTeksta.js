@@ -492,20 +492,32 @@ let EditorTeksta = function (divRef) {
 
     // ================= METODA: formatirajTekst(komanda) =================
 
-    let formatirajTekst = function (komanda) {
-        let sel = window.getSelection();
-        if (!sel || sel.rangeCount === 0) return false;
+   let formatirajTekst = function (komanda) {
+    // 1) provjera da li je komanda validna
+    const dozvoljene = ["bold", "italic", "underline"];
+    if (!dozvoljene.includes(komanda)) return false;
 
-        let range = sel.getRangeAt(0);
-        if (range.collapsed) return false;
+    // 2) provjera selekcije
+    let sel = window.getSelection();
+    if (!sel || sel.rangeCount === 0 || sel.isCollapsed) return false;
 
-        let node = range.commonAncestorContainer;
-        if (node.nodeType === 3) node = node.parentNode;
+    let range = sel.getRangeAt(0);
+    let node = range.commonAncestorContainer;
+    if (node.nodeType === 3) node = node.parentNode;
 
-        if (!divRef.contains(node)) return false;
+    // 3) provjera da li je selekcija unutar editora, ali robustnije
+    let cur = node;
+    let inside = false;
+    while (cur) {
+        if (cur === divRef) { inside = true; break; }
+        cur = cur.parentNode;
+    }
+    if (!inside) return false;
 
-        return document.execCommand(komanda, false, null);
-    };
+    // 4) stvarno primijeni formatiranje
+    return document.execCommand(komanda, false, null);
+};
+
 
     // ================= PUBLIC API =================
 
