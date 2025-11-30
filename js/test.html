@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>EditorTeksta Tests</title>
+    <!-- Load Mocha CSS -->
+    <link href="https://unpkg.com/mocha/mocha.css" rel="stylesheet" />
+</head>
+<body>
+    <!-- Mocha results will appear here -->
+    <div id="mocha"></div>
+
+    <!-- 1. Load Testing Libraries -->
+    <script src="https://unpkg.com/chai@4.3.7/chai.js"></script>
+    <script src="https://unpkg.com/mocha/mocha.js"></script>
+
+    <!-- 2. Setup Mocha -->
+    <script class="mocha-init">
+        mocha.setup('bdd');
+        mocha.checkLeaks();
+    </script>
+
+    <!-- 3. Load Your Module -->
+    <!-- Make sure the path matches where your file is -->
+    <script src="EditorTeksta.js"></script>
+
+    <!-- 4. Load Your Tests -->
+    <script src="testsS2.js"></script>
+
+    <!-- 5. Run Tests -->
+    <script class="mocha-exec">
+        mocha.run();
+    </script>
+</body>
+</html>
