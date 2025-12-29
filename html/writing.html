@@ -39,21 +39,48 @@
       <button class="toolbar-btn" id="btnItalic">Italic</button>
       <button class="toolbar-btn" id="btnUnderline">Underline</button>
     </div>
-    
+
     <div class="toolbar-separator"></div>
-    
+
     <div class="toolbar-section">
       <button class="toolbar-btn" id="btnBrojRijeci">Broj riječi</button>
       <button class="toolbar-btn" id="btnUloge">Uloge</button>
       <button class="toolbar-btn" id="btnPogresnaUloga">Pogrešne uloge</button>
     </div>
-    
+
     <div class="toolbar-separator"></div>
-    
+
     <div class="toolbar-section">
       <button class="toolbar-btn" id="btnBrojLinija">Broj linija (uloga)</button>
       <button class="toolbar-btn" id="btnScenarijUloge">Scenarij uloge</button>
       <button class="toolbar-btn" id="btnGrupisiUloge">Grupisi uloge</button>
+    </div>
+
+    <!-- ✅ NOVO: Backend sekcija (Spirala 3) -->
+    <div class="toolbar-separator"></div>
+
+    <div class="toolbar-section">
+      <input class="toolbar-input" id="inpScenarioId" type="number" placeholder="scenarioId" value="1">
+      <input class="toolbar-input" id="inpUserId" type="number" placeholder="userId" value="1">
+      <button class="toolbar-btn" id="btnLoadScenario">Učitaj</button>
+      <button class="toolbar-btn" id="btnCreateScenario">Novi</button>
+    </div>
+
+    <div class="toolbar-separator"></div>
+
+    <div class="toolbar-section">
+      <input class="toolbar-input" id="inpLineId" type="number" placeholder="lineId">
+      <button class="toolbar-btn" id="btnLockLine">Lock liniju</button>
+      <button class="toolbar-btn" id="btnUpdateLine">Update liniju</button>
+    </div>
+
+    <div class="toolbar-separator"></div>
+
+    <div class="toolbar-section">
+      <input class="toolbar-input" id="inpCharOld" type="text" placeholder="oldName (ALICE)">
+      <input class="toolbar-input" id="inpCharNew" type="text" placeholder="newName (ALICIA)">
+      <button class="toolbar-btn" id="btnLockChar">Lock ime</button>
+      <button class="toolbar-btn" id="btnUpdateChar">Rename</button>
     </div>
   </div>
 
@@ -158,9 +185,10 @@ Na projektoru stoji naslov: "[WEB TEHNOLOGIJE - SPIRALA 2]".<br>
     </section>
   </main>
 
-  <!-- JS modula -->
+  <!-- JS moduli -->
+  <script src="../js/PoziviAjax.js"></script>
   <script src="../js/EditorTeksta.js"></script>
-<script src="../js/editor.js"></script>
+  <script src="../js/editor.js"></script>
 
 </body>
 </html>
