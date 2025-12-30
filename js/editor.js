@@ -204,6 +204,38 @@ document.addEventListener("DOMContentLoaded", function () {
   return String(s ?? "").replace(/^\s*\[\s*\d+\s*\]\s*/, "");
 }
 
+function getEditorTextForLineId(lineId) {
+  const lines = (divEditor.innerText || "").split(/\r?\n/);
+  const re = new RegExp(`^\\s*\\[\\s*${lineId}\\s*\\]\\s*`);
+  const raw = lines.find(l => re.test(l)) ?? "";
+  return stripLinePrefix(raw);
+}
+// ====== SPIRALA 3: SPASI dugme -> snimi u backend (samo jedna linija) ======
+const btnSpasi = document.querySelector(".save-btn");
+if (btnSpasi) {
+  btnSpasi.addEventListener("click", () => {
+    const scenarioId = Number(document.getElementById("inpScenarioId")?.value);
+    const userId = Number(document.getElementById("inpUserId")?.value);
+    const lineId = Number(document.getElementById("inpLineId")?.value);
+
+    if (!scenarioId || !userId || !lineId) {
+      prikaziPoruku("Popuni scenarioId, userId i lineId pa onda SPASI.");
+      return;
+    }
+
+    // uzmi TEKST samo za tu liniju i skini [id] prefiks
+    const cleanText = getEditorTextForLineId(lineId);
+
+    PoziviAjax.lockLine(scenarioId, lineId, userId, (st1, d1) => {
+      if (st1 !== 200) { prikaziPoruku({ status: st1, data: d1 }); return; }
+
+      PoziviAjax.updateLine(scenarioId, lineId, userId, [cleanText], (st2, d2) => {
+        prikaziPoruku({ status: st2, data: d2 });
+        if (st2 === 200) refreshScenario();
+      });
+    });
+  });
+}
 
 
 
