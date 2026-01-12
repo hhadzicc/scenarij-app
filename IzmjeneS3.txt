@@ -1,0 +1,13 @@
+1) js/PoziviAjaxFetch.js -> js/PoziviAjax.js
+- Promijenjen naziv datoteke sa PoziviAjaxFetch.js na PoziviAjax.js
+Razlog: I1 – testovi traže tačan naziv datoteke.
+
+2) html/writing.html
+- Promijenjena linija učitavanja skripte:
+  sa: <script src="../js/PoziviAjaxFetch.js"></script>
+  na: <script src="../js/PoziviAjax.js"></script>
+Razlog: I1/I6 – usklađivanje sa nazivom modula.
+
+3) server.js
+- Dodano da GET / vraća writing.html kao početnu stranicu.
+Razlog: I3 – usklađivanje rute aplikacije.
