@@ -1,4 +1,4 @@
-const PoziviAjax = (function () {
+(function () {
   function request(method, url, body, callback) {
     const options = { method, headers: { "Content-Type": "application/json" } };
     if (body !== null && body !== undefined) options.body = JSON.stringify(body);
@@ -12,7 +12,7 @@ const PoziviAjax = (function () {
       .catch((err) => callback(0, { message: err.message }));
   }
 
-  return {
+  const api = {
     postScenario: function (title, callback) {
       request("POST", "/api/scenarios", { title }, callback);
     },
@@ -41,4 +41,10 @@ const PoziviAjax = (function () {
       request("GET", `/api/scenarios/${scenarioId}/deltas?since=${since}`, null, callback);
     }
   };
+
+  // za testove: očekuju ovo ime
+  window.PoziviAjaxFetch = api;
+
+  // za kompatibilnost: jer ostatak projekta koristi staro ime
+  window.PoziviAjax = api;
 })();

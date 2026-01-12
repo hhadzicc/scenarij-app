@@ -6,6 +6,10 @@ const app = express();
 app.use(express.json());
 
 app.use(express.static(path.join(__dirname)));
+app.get("/", (req, res) => {
+  res.sendFile(path.join(__dirname, "html", "writing.html"));
+});
+
 
 const DATA_DIR = path.join(__dirname, "data");
 const SCENARIOS_DIR = path.join(DATA_DIR, "scenarios");

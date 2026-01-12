@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="bs">
+<head>
+    <meta charset="UTF-8">
+    <title>PoziviAjax Fetch Testovi</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/mocha/10.2.0/mocha.min.css">
+</head>
+<body>
+    <div id="mocha"></div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mocha/10.2.0/mocha.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/chai/4.3.7/chai.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/sinon.js/15.0.1/sinon.min.js"></script>
+
+    <script>
+        mocha.setup('bdd');
+        const expect = chai.expect;
+    </script>
+
+    <script src="PoziviAjaxFetch.js"></script>
+
+    <script>
+        describe('PoziviAjaxFetch.js (Fetch API) Browser Testovi', function() {
+            let fetchStub;
+
+            beforeEach(function() {
+                // Presrećemo globalni fetch poziv
+                fetchStub = sinon.stub(window, 'fetch');
+            });
+
+            afterEach(function() {
+                // Vraćamo fetch u normalno stanje nakon svakog testa
+                fetchStub.restore();
+            });
+
+            // Pomoćna funkcija za simulaciju Fetch odgovora
+            function mockFetchResponse(status, data) {
+                return Promise.resolve({
+                    status: status,
+                    ok: status >= 200 && status < 300,
+                    json: () => Promise.resolve(data)
+                });
+            }
+
+            it('postScenario treba poslati ispravan POST zahtjev', function(done) {
+                const mockData = { id: 1, title: "Novi Scenario", content: [] };
+                fetchStub.returns(mockFetchResponse(200, mockData));
+
+                PoziviAjaxFetch.postScenario("Novi Scenario", function(status, data) {
+                    try {
+                        expect(status).to.equal(200);
+                        expect(data.title).to.equal("Novi Scenario");
+                        
+                        const [url, options] = fetchStub.getCall(0).args;
+                        expect(url).to.contain('/api/scenarios');
+                        expect(options.method).to.equal('POST');
+                        expect(JSON.parse(options.body).title).to.equal("Novi Scenario");
+                        done();
+                    } catch (e) { done(e); }
+                });
+            });
+
+            it('getScenario treba poslati GET zahtjev na ispravan URL', function(done) {
+                const mockData = { id: 42, title: "Test", content: [] };
+                fetchStub.returns(mockFetchResponse(200, mockData));
+
+                PoziviAjaxFetch.getScenario(42, function(status, data) {
+                    try {
+                        expect(status).to.equal(200);
+                        expect(fetchStub.getCall(0).args[0]).to.contain('/api/scenarios/42');
+                        done();
+                    } catch (e) { done(e); }
+                });
+            });
+
+            it('lockLine treba poslati userId u body-ju', function(done) {
+                fetchStub.returns(mockFetchResponse(200, { message: "Uspjesno" }));
+
+                PoziviAjaxFetch.lockLine(1, 10, 5, function(status, data) {
+                    try {
+                        const [url, options] = fetchStub.getCall(0).args;
+                        expect(url).to.contain('/api/scenarios/1/lines/10/lock');
+                        expect(JSON.parse(options.body).userId).to.equal(5);
+                        done();
+                    } catch (e) { done(e); }
+                });
+            });
+
+            it('updateLine treba poslati niz novih linija (prelamanje)', function(done) {
+                fetchStub.returns(mockFetchResponse(200, { message: "Azurirano" }));
+                const noveLinije = ["Prva polovina rečenice...", "...druga polovina rečenice"];
+
+                PoziviAjaxFetch.updateLine(1, 10, 5, noveLinije, function(status, data) {
+                    try {
+                        const options = fetchStub.getCall(0).args[1];
+                        const body = JSON.parse(options.body);
+                        expect(body.newText).to.be.an('array');
+                        expect(body.newText).to.have.lengthOf(2);
+                        done();
+                    } catch (e) { done(e); }
+                });
+            });
+
+            it('getDeltas treba ispravno dodati query parametar since', function(done) {
+                fetchStub.returns(mockFetchResponse(200, { deltas: [] }));
+
+                PoziviAjaxFetch.getDeltas(1, 1736520000, function(status, data) {
+                    try {
+                        const url = fetchStub.getCall(0).args[0];
+                        expect(url).to.contain('since=1736520000');
+                        done();
+                    } catch (e) { done(e); }
+                });
+            });
+
+            it('treba vratiti status 409 kada je linija već zauzeta', function(done) {
+                fetchStub.returns(mockFetchResponse(409, { message: "Vec zakljucana" }));
+
+                PoziviAjaxFetch.lockLine(1, 1, 99, function(status, data) {
+                    try {
+                        expect(status).to.equal(409);
+                        expect(data.message).to.equal("Vec zakljucana");
+                        done();
+                    } catch (e) { done(e); }
+                });
+            });
+        });
+
+        mocha.run();
+    </script>
+</body>
+</html>
