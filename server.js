@@ -136,7 +136,7 @@ function wrap20Words(text, maxWords = 20) {
 
     // ako bi ovo bila 21. riječ -> prelomi prije tokena
     if (countsAsWord && wordCount >= maxWords) {
-      segments.push(seg);
+      segments.push(seg.trimEnd());
       seg = "";
       wordCount = 0;
     }
@@ -147,7 +147,7 @@ function wrap20Words(text, maxWords = 20) {
     i = j;
   }
 
-  segments.push(seg);
+  segments.push(seg.trimEnd());
   return segments;
 }
 
