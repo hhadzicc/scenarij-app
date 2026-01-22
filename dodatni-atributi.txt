@@ -1,0 +1,2 @@
+Scenario.initialSnapshot - JSON (string) početnog stanja scenarija odmah nakon kreiranja.
+Koristi se za restore/checkpoint mehanizam (rekonstrukcija iz baseline + deltas).
