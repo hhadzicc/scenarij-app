@@ -74,16 +74,17 @@ async function seedDatabase() {
   ];
 
   // Kreiraj scenario 1 (sa initialSnapshot baseline)
-  await Scenario.create({
-    id: scenario1.id,
+  const createdScenario = await Scenario.create({
     title: scenario1.title,
     initialSnapshot: JSON.stringify(scenario1.content)
   });
 
+  const scenarioId = createdScenario.id;
+
   // Kreiraj linije
   await Line.bulkCreate(
     scenario1.content.map((l) => ({
-      scenarioId: 1,
+      scenarioId,
       lineId: l.lineId,
       nextLineId: l.nextLineId,
       text: l.text
@@ -91,7 +92,12 @@ async function seedDatabase() {
   );
 
   // Kreiraj delte
-  await Delta.bulkCreate(deltas);
+  await Delta.bulkCreate(
+    deltas.map((delta) => ({
+      ...delta,
+      scenarioId
+    }))
+  );
 }
 
 module.exports = { seedDatabase };

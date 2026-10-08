@@ -7,6 +7,15 @@ const { seedDatabase } = require("./seed");
 const app = express();
 app.use(express.json());
 
+app.get("/health", async (_req, res) => {
+  try {
+    await sequelize.authenticate();
+    return res.status(200).json({ status: "ok" });
+  } catch {
+    return res.status(503).json({ status: "unavailable" });
+  }
+});
+
 // Static i homepage
 app.use(express.static(path.join(__dirname)));
 app.get("/", (req, res) => {
@@ -550,13 +559,14 @@ app.get("/api/scenarios/:scenarioId/restore/:checkpointId", async (req, res) => 
 async function start() {
   try {
     await sequelize.authenticate();
-    await sequelize.sync({ force: true });
+    await sequelize.sync();
 
-    // Seed da testovi Spirale 3 odmah imaju scenario 1 i delte
-    await seedDatabase();
+    if (await Scenario.count() === 0) {
+      await seedDatabase();
+    }
 
     const PORT = process.env.PORT || 3000;
-    app.listen(PORT, () => console.log(`Server running: http://localhost:${PORT}`));
+    app.listen(PORT, "0.0.0.0", () => console.log(`Server running on port ${PORT}`));
   } catch (e) {
     console.error("Ne mogu pokrenuti server / bazu:", e);
     process.exit(1);

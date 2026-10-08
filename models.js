@@ -11,7 +11,7 @@ const Scenario = sequelize.define(
 
     // DODATNO (Spirala 4): čuvamo početno stanje scenarija nakon kreiranja
     // da restore može početi od "baseline" stanja
-    initialSnapshot: { type: DataTypes.TEXT("long"), allowNull: true }
+    initialSnapshot: { type: DataTypes.TEXT, allowNull: true }
   },
   {
     tableName: "Scenario",
