@@ -29,6 +29,13 @@
         </button>
       </nav>
 
+      <div class="sidebar-account" id="sidebarAccount">
+        <a class="account-login" href="/auth?mode=login&next=/">
+          <i data-lucide="log-in" aria-hidden="true"></i>
+          <span>Prijava</span>
+        </a>
+      </div>
+
       <div class="sidebar-note">
         <span class="connection-dot" aria-hidden="true"></span>
         <div>
@@ -44,9 +51,14 @@
           <i data-lucide="menu" aria-hidden="true"></i>
         </button>
         <a class="mobile-brand" href="/">ScenarijPro</a>
-        <button class="icon-button accent" id="mobileCreateButton" type="button" aria-label="Novi scenarij">
-          <i data-lucide="plus" aria-hidden="true"></i>
-        </button>
+        <div class="mobile-actions">
+          <a class="icon-button" id="mobileAccountButton" href="/auth?mode=login&next=/" aria-label="Korisnički račun">
+            <i data-lucide="user-round" aria-hidden="true"></i>
+          </a>
+          <button class="icon-button accent" id="mobileCreateButton" type="button" aria-label="Novi scenarij">
+            <i data-lucide="plus" aria-hidden="true"></i>
+          </button>
+        </div>
       </header>
 
       <main class="projects-main">
@@ -56,10 +68,16 @@
             <h1>Scenariji</h1>
             <p class="page-description">Nastavi pisanje ili započni novu priču.</p>
           </div>
-          <button class="primary-button" id="createScenarioButton" type="button">
-            <i data-lucide="plus" aria-hidden="true"></i>
-            <span>Novi scenarij</span>
-          </button>
+          <div class="heading-actions">
+            <a class="secondary-button" id="accountButton" href="/auth?mode=login&next=/">
+              <i data-lucide="log-in" aria-hidden="true"></i>
+              <span>Prijava</span>
+            </a>
+            <button class="primary-button" id="createScenarioButton" type="button">
+              <i data-lucide="plus" aria-hidden="true"></i>
+              <span>Novi scenarij</span>
+            </button>
+          </div>
         </header>
 
         <section class="project-tools" aria-label="Pretraga i pregled scenarija">
@@ -103,7 +121,7 @@
           <h2>Novi scenarij</h2>
           <p>Daj radni naslov svojoj priči. Možeš ga promijeniti kasnije.</p>
         </div>
-        <button class="icon-button" value="cancel" type="submit" aria-label="Zatvori">
+        <button class="icon-button" type="button" data-close-create-modal aria-label="Zatvori">
           <i data-lucide="x" aria-hidden="true"></i>
         </button>
       </div>
@@ -112,7 +130,7 @@
         <input id="scenarioTitle" name="title" type="text" maxlength="160" placeholder="Npr. Grad bez sna" required>
       </label>
       <div class="modal-actions">
-        <button class="secondary-button" value="cancel" type="submit">Odustani</button>
+        <button class="secondary-button" type="button" data-close-create-modal>Odustani</button>
         <button class="primary-button" id="confirmCreateButton" type="button">
           <span>Kreiraj i otvori</span>
           <i data-lucide="arrow-right" aria-hidden="true"></i>

@@ -139,11 +139,76 @@ input:focus-visible {
 .sidebar-note {
   display: flex;
   gap: 10px;
-  margin-top: auto;
+  margin-top: 16px;
   padding-top: 18px;
   border-top: 1px solid #30343b;
   color: var(--sidebar-muted);
 }
+
+.sidebar-account {
+  margin-top: auto;
+}
+
+.account-login,
+.account-summary {
+  display: flex;
+  min-height: 46px;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px;
+  border-radius: 7px;
+  color: #d8dce2;
+  text-decoration: none;
+}
+
+.account-login:hover { background: #292d34; color: #fff; }
+.account-login svg { width: 18px; }
+
+.account-avatar,
+.small-avatar {
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: #69cfb5;
+  color: #15362f;
+  font-weight: 800;
+}
+
+.account-avatar { width: 32px; height: 32px; flex: 0 0 auto; font-size: 12px; }
+.small-avatar { width: 24px; height: 24px; font-size: 10px; }
+
+.account-copy {
+  display: grid;
+  min-width: 0;
+  gap: 2px;
+}
+
+.account-copy strong,
+.account-copy span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.account-copy strong { color: #fff; font-size: 11px; }
+.account-copy span { color: #969eaa; font-size: 9px; }
+
+.account-logout {
+  display: grid;
+  width: 30px;
+  height: 30px;
+  flex: 0 0 auto;
+  margin-left: auto;
+  place-items: center;
+  border: 0;
+  border-radius: 5px;
+  background: transparent;
+  color: #9fa6b0;
+  cursor: pointer;
+}
+
+.account-logout:hover { background: #30343b; color: #fff; }
+.account-logout svg { width: 16px; }
 
 .connection-dot {
   width: 8px;
@@ -190,6 +255,13 @@ input:focus-visible {
   align-items: flex-end;
   justify-content: space-between;
   gap: 24px;
+}
+
+.heading-actions,
+.mobile-actions {
+  display: flex;
+  align-items: center;
+  gap: 9px;
 }
 
 .eyebrow {
@@ -381,6 +453,22 @@ p {
   align-items: flex-start;
   justify-content: space-between;
   gap: 12px;
+}
+
+.demo-badge {
+  padding: 5px 7px;
+  border: 1px solid #ead6ae;
+  border-radius: 4px;
+  background: #fff8e9;
+  color: #94610d;
+  font-size: 9px;
+  font-weight: 800;
+}
+
+.demo-card .file-mark {
+  border-color: #ead6ae;
+  background: #fff8e9;
+  color: #a66b0d;
 }
 
 .file-mark {
@@ -686,7 +774,7 @@ p {
     font-size: 34px;
   }
 
-  .page-heading > .primary-button {
+  .page-heading .heading-actions {
     display: none;
   }
 

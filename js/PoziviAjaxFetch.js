@@ -25,6 +25,10 @@
   }
 
   const api = {
+    getCurrentUser(callback) {
+      return request("GET", "/api/auth/me", null, callback);
+    },
+
     getScenarios(callback) {
       return request("GET", "/api/scenarios", null, callback);
     },
@@ -43,6 +47,10 @@
 
     addLine(scenarioId, text, callback) {
       return request("POST", `/api/scenarios/${scenarioId}/lines`, { text }, callback);
+    },
+
+    duplicateScenario(scenarioId, callback) {
+      return request("POST", `/api/scenarios/${scenarioId}/duplicate`, {}, callback);
     },
 
     lockLine(scenarioId, lineId, userId, callback) {

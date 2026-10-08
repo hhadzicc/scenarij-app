@@ -1,12 +1,73 @@
 const express = require("express");
 const path = require("path");
 const { Op } = require("sequelize");
+const bcrypt = require("bcryptjs");
+const session = require("express-session");
+const SequelizeStoreFactory = require("connect-session-sequelize");
+const helmet = require("helmet");
+const { rateLimit } = require("express-rate-limit");
 
-const { sequelize, Scenario, Line, Delta, Checkpoint } = require("./models");
+const { sequelize, User, Scenario, Line, Delta, Checkpoint } = require("./models");
+const { runMigrations } = require("./migrations");
 const { seedDatabase } = require("./seed");
 
 const app = express();
-app.use(express.json());
+const isProduction = process.env.NODE_ENV === "production";
+const sessionSecret = process.env.SESSION_SECRET || "scenarijpro-local-development-only";
+
+if (isProduction && !process.env.SESSION_SECRET) {
+  throw new Error("SESSION_SECRET environment variable is required in production.");
+}
+
+if (isProduction) app.set("trust proxy", 1);
+
+app.use(
+  helmet({
+    contentSecurityPolicy: {
+      directives: {
+        "default-src": ["'self'"],
+        "script-src": ["'self'", "https://unpkg.com"],
+        "style-src": ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
+        "font-src": ["'self'", "https://fonts.gstatic.com"],
+        "img-src": ["'self'", "data:"],
+        "connect-src": ["'self'"]
+      }
+    }
+  })
+);
+app.use(express.json({ limit: "256kb" }));
+
+const SequelizeStore = SequelizeStoreFactory(session.Store);
+const sessionStore = new SequelizeStore({
+  db: sequelize,
+  tableName: "Session",
+  checkExpirationInterval: 15 * 60 * 1000,
+  expiration: 7 * 24 * 60 * 60 * 1000
+});
+
+app.use(
+  session({
+    name: "scenarij.sid",
+    secret: sessionSecret,
+    store: sessionStore,
+    resave: false,
+    saveUninitialized: false,
+    cookie: {
+      httpOnly: true,
+      secure: isProduction,
+      sameSite: "lax",
+      maxAge: 7 * 24 * 60 * 60 * 1000
+    }
+  })
+);
+
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  limit: 20,
+  standardHeaders: "draft-8",
+  legacyHeaders: false,
+  message: { message: "Previše pokušaja. Pokušaj ponovo za nekoliko minuta." }
+});
 
 app.get("/health", async (_req, res) => {
   try {
@@ -17,13 +78,17 @@ app.get("/health", async (_req, res) => {
   }
 });
 
-// Static i homepage
-app.use(express.static(path.join(__dirname)));
+// Public frontend assets only. Server source, logs and local configuration stay private.
+app.use("/css", express.static(path.join(__dirname, "css"), { index: false }));
+app.use("/js", express.static(path.join(__dirname, "js"), { index: false }));
 app.get("/", (req, res) => {
   res.sendFile(path.join(__dirname, "html", "projects.html"));
 });
 app.get("/editor", (req, res) => {
   res.sendFile(path.join(__dirname, "html", "writing.html"));
+});
+app.get("/auth", (req, res) => {
+  res.sendFile(path.join(__dirname, "html", "auth.html"));
 });
 
 // =================== LOCKOVI U RAM-U ===================
@@ -45,6 +110,53 @@ function keyLine(scenarioId, lineId) {
 
 function escapeRegExp(s) {
   return String(s).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+function currentUserId(req) {
+  const userId = Number(req.session?.userId);
+  return Number.isInteger(userId) && userId > 0 ? userId : null;
+}
+
+function requireAuth(req, res, next) {
+  if (!currentUserId(req)) {
+    return res.status(401).json({ message: "Prijavi se da nastaviš." });
+  }
+  return next();
+}
+
+async function findAccessibleScenario(scenarioId, userId) {
+  const access = [{ isDemo: true }];
+  if (userId) access.push({ ownerId: userId });
+
+  return Scenario.findOne({
+    where: {
+      id: scenarioId,
+      [Op.or]: access
+    }
+  });
+}
+
+async function findEditableScenario(scenarioId, userId) {
+  if (!userId) return null;
+  return Scenario.findOne({
+    where: { id: scenarioId, ownerId: userId, isDemo: false }
+  });
+}
+
+function regenerateSession(req) {
+  return new Promise((resolve, reject) => {
+    req.session.regenerate((error) => (error ? reject(error) : resolve()));
+  });
+}
+
+function destroySession(req) {
+  return new Promise((resolve, reject) => {
+    req.session.destroy((error) => (error ? reject(error) : resolve()));
+  });
+}
+
+function publicUser(user) {
+  return user ? { id: user.id, name: user.name, email: user.email } : null;
 }
 
 // Separatori riječi: razmak/tab/newline + zarez + tačka
@@ -154,12 +266,83 @@ async function dbNextLineIdValue(scenarioId) {
   return (Number(max) || 0) + 1;
 }
 
-// =================== RUTE (S3) ===================
+// =================== AUTENTIFIKACIJA ===================
+
+app.get("/api/auth/me", async (req, res) => {
+  const userId = currentUserId(req);
+  if (!userId) return res.status(200).json({ user: null });
+
+  const user = await User.findByPk(userId);
+  if (!user) {
+    await destroySession(req);
+    return res.status(200).json({ user: null });
+  }
+
+  return res.status(200).json({ user: publicUser(user) });
+});
+
+app.post("/api/auth/register", authLimiter, async (req, res) => {
+  const name = String(req.body?.name ?? "").trim();
+  const email = String(req.body?.email ?? "").trim().toLowerCase();
+  const password = String(req.body?.password ?? "");
+
+  if (name.length < 2 || name.length > 80) {
+    return res.status(400).json({ message: "Ime mora imati između 2 i 80 znakova." });
+  }
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || email.length > 254) {
+    return res.status(400).json({ message: "Unesi ispravnu email adresu." });
+  }
+  if (password.length < 8 || password.length > 128) {
+    return res.status(400).json({ message: "Lozinka mora imati najmanje 8 znakova." });
+  }
+
+  const existing = await User.findOne({ where: { email } });
+  if (existing) {
+    return res.status(409).json({ message: "Račun sa ovom email adresom već postoji." });
+  }
+
+  const passwordHash = await bcrypt.hash(password, 12);
+  const user = await User.create({ name, email, passwordHash });
+  await regenerateSession(req);
+  req.session.userId = user.id;
+
+  return res.status(201).json({ user: publicUser(user) });
+});
+
+app.post("/api/auth/login", authLimiter, async (req, res) => {
+  const email = String(req.body?.email ?? "").trim().toLowerCase();
+  const password = String(req.body?.password ?? "");
+  const user = await User.findOne({ where: { email } });
+  const valid = user ? await bcrypt.compare(password, user.passwordHash) : false;
+
+  if (!valid) {
+    return res.status(401).json({ message: "Email ili lozinka nisu ispravni." });
+  }
+
+  await regenerateSession(req);
+  req.session.userId = user.id;
+  return res.status(200).json({ user: publicUser(user) });
+});
+
+app.post("/api/auth/logout", requireAuth, async (req, res) => {
+  await destroySession(req);
+  res.clearCookie("scenarij.sid");
+  return res.status(204).end();
+});
+
+// =================== SCENARIJI ===================
 
 // GET /api/scenarios
-app.get("/api/scenarios", async (_req, res) => {
+app.get("/api/scenarios", async (req, res) => {
   try {
-    const scenarios = await Scenario.findAll({ order: [["id", "DESC"]] });
+    const userId = currentUserId(req);
+    const access = [{ isDemo: true }];
+    if (userId) access.push({ ownerId: userId });
+
+    const scenarios = await Scenario.findAll({
+      where: { [Op.or]: access },
+      order: [["isDemo", "ASC"], ["id", "DESC"]]
+    });
     const result = await Promise.all(
       scenarios.map(async (scenario) => {
         const [lineCount, lastDelta] = await Promise.all([
@@ -171,7 +354,9 @@ app.get("/api/scenarios", async (_req, res) => {
           id: scenario.id,
           title: scenario.title,
           lineCount,
-          updatedAt: Number(lastDelta) || null
+          updatedAt: Number(lastDelta) || null,
+          isDemo: scenario.isDemo,
+          canEdit: Boolean(userId && scenario.ownerId === userId && !scenario.isDemo)
         };
       })
     );
@@ -183,7 +368,7 @@ app.get("/api/scenarios", async (_req, res) => {
 });
 
 // POST /api/scenarios
-app.post("/api/scenarios", async (req, res) => {
+app.post("/api/scenarios", requireAuth, async (req, res) => {
   const titleRaw = req.body?.title;
   const title =
     typeof titleRaw === "string" && titleRaw.trim() !== ""
@@ -192,7 +377,9 @@ app.post("/api/scenarios", async (req, res) => {
 
   // Kreiraj scenario
   const sc = await Scenario.create({
-    title,
+    title: title.slice(0, 160),
+    ownerId: currentUserId(req),
+    isDemo: false,
     initialSnapshot: JSON.stringify([{ lineId: 1, nextLineId: null, text: "" }])
   });
 
@@ -211,15 +398,65 @@ app.post("/api/scenarios", async (req, res) => {
   });
 });
 
+// POST /api/scenarios/:scenarioId/duplicate
+app.post("/api/scenarios/:scenarioId/duplicate", requireAuth, async (req, res) => {
+  const sourceId = Number(req.params.scenarioId);
+  const userId = currentUserId(req);
+  const source = await findAccessibleScenario(sourceId, userId);
+  if (!source) return res.status(404).json({ message: "Scenario ne postoji!" });
+
+  const sourceLines = getOrderedContent(await dbGetLines(sourceId));
+  const copy = await sequelize.transaction(async (transaction) => {
+    const scenario = await Scenario.create(
+      {
+        title: `${source.title} - kopija`.slice(0, 160),
+        ownerId: userId,
+        isDemo: false,
+        initialSnapshot: JSON.stringify(
+          sourceLines.map(({ lineId, nextLineId, text }) => ({ lineId, nextLineId, text }))
+        )
+      },
+      { transaction }
+    );
+
+    await Line.bulkCreate(
+      sourceLines.map(({ lineId, nextLineId, text }) => ({
+        scenarioId: scenario.id,
+        lineId,
+        nextLineId,
+        text
+      })),
+      { transaction }
+    );
+
+    const timestamp = nowUnixSeconds();
+    await Delta.bulkCreate(
+      sourceLines.map(({ lineId, nextLineId, text }, index) => ({
+        scenarioId: scenario.id,
+        type: "line_update",
+        lineId,
+        nextLineId,
+        content: text,
+        timestamp: timestamp + index
+      })),
+      { transaction }
+    );
+
+    return scenario;
+  });
+
+  return res.status(201).json({ id: copy.id, title: copy.title });
+});
+
 // PATCH /api/scenarios/:scenarioId
-app.patch("/api/scenarios/:scenarioId", async (req, res) => {
+app.patch("/api/scenarios/:scenarioId", requireAuth, async (req, res) => {
   const scenarioId = Number(req.params.scenarioId);
   const title = String(req.body?.title ?? "").trim();
 
   if (!title) return res.status(400).json({ message: "Naslov je obavezan." });
 
-  const scenario = await Scenario.findByPk(scenarioId);
-  if (!scenario) return res.status(404).json({ message: "Scenario ne postoji!" });
+  const scenario = await findEditableScenario(scenarioId, currentUserId(req));
+  if (!scenario) return res.status(403).json({ message: "Ovaj scenarij možeš samo pregledati." });
 
   scenario.title = title.slice(0, 160);
   await scenario.save();
@@ -228,12 +465,16 @@ app.patch("/api/scenarios/:scenarioId", async (req, res) => {
 });
 
 // POST /api/scenarios/:scenarioId/lines
-app.post("/api/scenarios/:scenarioId/lines", async (req, res) => {
+app.post("/api/scenarios/:scenarioId/lines", requireAuth, async (req, res) => {
   const scenarioId = Number(req.params.scenarioId);
   const text = String(req.body?.text ?? "");
 
-  const scenario = await Scenario.findByPk(scenarioId);
-  if (!scenario) return res.status(404).json({ message: "Scenario ne postoji!" });
+  if (text.length > 10000) {
+    return res.status(400).json({ message: "Linija je preduga." });
+  }
+
+  const scenario = await findEditableScenario(scenarioId, currentUserId(req));
+  if (!scenario) return res.status(403).json({ message: "Ovaj scenarij možeš samo pregledati." });
 
   try {
     const created = await sequelize.transaction(async (transaction) => {
@@ -292,13 +533,13 @@ app.post("/api/scenarios/:scenarioId/lines", async (req, res) => {
 });
 
 // POST /api/scenarios/:scenarioId/lines/:lineId/lock
-app.post("/api/scenarios/:scenarioId/lines/:lineId/lock", async (req, res) => {
+app.post("/api/scenarios/:scenarioId/lines/:lineId/lock", requireAuth, async (req, res) => {
   const scenarioId = Number(req.params.scenarioId);
   const lineId = Number(req.params.lineId);
-  const userId = Number(req.body?.userId);
+  const userId = currentUserId(req);
 
-  const scenario = await dbGetScenarioOrNull(scenarioId);
-  if (!scenario) return res.status(404).json({ message: "Scenario ne postoji!" });
+  const scenario = await findEditableScenario(scenarioId, userId);
+  if (!scenario) return res.status(403).json({ message: "Ovaj scenarij možeš samo pregledati." });
 
   const line = await dbGetLineOrNull(scenarioId, lineId);
   if (!line) return res.status(404).json({ message: "Linija ne postoji!" });
@@ -327,20 +568,23 @@ app.post("/api/scenarios/:scenarioId/lines/:lineId/lock", async (req, res) => {
 });
 
 // PUT /api/scenarios/:scenarioId/lines/:lineId
-app.put("/api/scenarios/:scenarioId/lines/:lineId", async (req, res) => {
+app.put("/api/scenarios/:scenarioId/lines/:lineId", requireAuth, async (req, res) => {
   const scenarioId = Number(req.params.scenarioId);
   const lineId = Number(req.params.lineId);
-  const userId = Number(req.body?.userId);
+  const userId = currentUserId(req);
   const newText = req.body?.newText;
 
-  const scenario = await dbGetScenarioOrNull(scenarioId);
-  if (!scenario) return res.status(404).json({ message: "Scenario ne postoji!" });
+  const scenario = await findEditableScenario(scenarioId, userId);
+  if (!scenario) return res.status(403).json({ message: "Ovaj scenarij možeš samo pregledati." });
 
   const line = await dbGetLineOrNull(scenarioId, lineId);
   if (!line) return res.status(404).json({ message: "Linija ne postoji!" });
 
   if (!Array.isArray(newText) || newText.length === 0) {
     return res.status(400).json({ message: "Niz new_text ne smije biti prazan!" });
+  }
+  if (newText.some((text) => String(text).length > 10000)) {
+    return res.status(400).json({ message: "Linija je preduga." });
   }
 
   const k = keyLine(scenarioId, lineId);
@@ -435,13 +679,13 @@ app.put("/api/scenarios/:scenarioId/lines/:lineId", async (req, res) => {
 });
 
 // POST /api/scenarios/:scenarioId/characters/lock
-app.post("/api/scenarios/:scenarioId/characters/lock", async (req, res) => {
+app.post("/api/scenarios/:scenarioId/characters/lock", requireAuth, async (req, res) => {
   const scenarioId = Number(req.params.scenarioId);
-  const userId = Number(req.body?.userId);
+  const userId = currentUserId(req);
   const characterName = String(req.body?.characterName ?? "");
 
-  const scenario = await dbGetScenarioOrNull(scenarioId);
-  if (!scenario) return res.status(404).json({ message: "Scenario ne postoji!" });
+  const scenario = await findEditableScenario(scenarioId, userId);
+  if (!scenario) return res.status(403).json({ message: "Ovaj scenarij možeš samo pregledati." });
 
   if (!lockedCharacterOwner.has(scenarioId)) {
     lockedCharacterOwner.set(scenarioId, new Map());
@@ -458,14 +702,14 @@ app.post("/api/scenarios/:scenarioId/characters/lock", async (req, res) => {
 });
 
 // POST /api/scenarios/:scenarioId/characters/update
-app.post("/api/scenarios/:scenarioId/characters/update", async (req, res) => {
+app.post("/api/scenarios/:scenarioId/characters/update", requireAuth, async (req, res) => {
   const scenarioId = Number(req.params.scenarioId);
-  const userId = Number(req.body?.userId);
+  const userId = currentUserId(req);
   const oldName = String(req.body?.oldName ?? "");
   const newName = String(req.body?.newName ?? "");
 
-  const scenario = await dbGetScenarioOrNull(scenarioId);
-  if (!scenario) return res.status(404).json({ message: "Scenario ne postoji!" });
+  const scenario = await findEditableScenario(scenarioId, userId);
+  if (!scenario) return res.status(403).json({ message: "Ovaj scenarij možeš samo pregledati." });
 
   const map = lockedCharacterOwner.get(scenarioId) || new Map();
   const owner = map.get(oldName);
@@ -529,7 +773,7 @@ app.get("/api/scenarios/:scenarioId/deltas", async (req, res) => {
   const scenarioId = Number(req.params.scenarioId);
   const since = Number(req.query.since ?? 0);
 
-  const scenario = await dbGetScenarioOrNull(scenarioId);
+  const scenario = await findAccessibleScenario(scenarioId, currentUserId(req));
   if (!scenario) return res.status(404).json({ message: "Scenario ne postoji!" });
 
   const deltas = await Delta.findAll({
@@ -546,8 +790,9 @@ app.get("/api/scenarios/:scenarioId/deltas", async (req, res) => {
 // GET /api/scenarios/:scenarioId
 app.get("/api/scenarios/:scenarioId", async (req, res) => {
   const scenarioId = Number(req.params.scenarioId);
+  const userId = currentUserId(req);
 
-  const scenario = await dbGetScenarioOrNull(scenarioId);
+  const scenario = await findAccessibleScenario(scenarioId, userId);
   if (!scenario) return res.status(404).json({ message: "Scenario ne postoji!" });
 
   const lines = await dbGetLines(scenarioId);
@@ -558,6 +803,8 @@ app.get("/api/scenarios/:scenarioId", async (req, res) => {
   return res.status(200).json({
     id: scenario.id,
     title: scenario.title,
+    isDemo: scenario.isDemo,
+    canEdit: Boolean(userId && scenario.ownerId === userId && !scenario.isDemo),
     content: ordered
   });
 });
@@ -565,11 +812,11 @@ app.get("/api/scenarios/:scenarioId", async (req, res) => {
 // =================== RUTE (S4) ===================
 
 // POST /api/scenarios/:scenarioId/checkpoint
-app.post("/api/scenarios/:scenarioId/checkpoint", async (req, res) => {
+app.post("/api/scenarios/:scenarioId/checkpoint", requireAuth, async (req, res) => {
   const scenarioId = Number(req.params.scenarioId);
 
-  const scenario = await dbGetScenarioOrNull(scenarioId);
-  if (!scenario) return res.status(404).json({ message: "Scenario ne postoji!" });
+  const scenario = await findEditableScenario(scenarioId, currentUserId(req));
+  if (!scenario) return res.status(403).json({ message: "Ovaj scenarij možeš samo pregledati." });
 
   await Checkpoint.create({ scenarioId, timestamp: nowUnixSeconds() });
 
@@ -580,7 +827,7 @@ app.post("/api/scenarios/:scenarioId/checkpoint", async (req, res) => {
 app.get("/api/scenarios/:scenarioId/checkpoints", async (req, res) => {
   const scenarioId = Number(req.params.scenarioId);
 
-  const scenario = await dbGetScenarioOrNull(scenarioId);
+  const scenario = await findAccessibleScenario(scenarioId, currentUserId(req));
   if (!scenario) return res.status(404).json({ message: "Scenario ne postoji!" });
 
   const cps = await Checkpoint.findAll({
@@ -596,7 +843,7 @@ app.get("/api/scenarios/:scenarioId/restore/:checkpointId", async (req, res) => 
   const scenarioId = Number(req.params.scenarioId);
   const checkpointId = Number(req.params.checkpointId);
 
-  const scenario = await Scenario.findByPk(scenarioId);
+  const scenario = await findAccessibleScenario(scenarioId, currentUserId(req));
   if (!scenario) return res.status(404).json({ message: "Scenario ne postoji!" });
 
   const checkpoint = await Checkpoint.findOne({ where: { id: checkpointId, scenarioId } });
@@ -670,10 +917,9 @@ async function start() {
   try {
     await sequelize.authenticate();
     await sequelize.sync();
-
-    if (await Scenario.count() === 0) {
-      await seedDatabase();
-    }
+    await runMigrations(sequelize);
+    await sessionStore.sync();
+    await seedDatabase();
 
     const PORT = process.env.PORT || 3000;
     app.listen(PORT, "0.0.0.0", () => console.log(`Server running on port ${PORT}`));

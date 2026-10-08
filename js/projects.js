@@ -3,6 +3,7 @@
 
   const state = {
     scenarios: [],
+    user: null,
     query: "",
     view: localStorage.getItem("scenario-view") || "grid"
   };
@@ -64,6 +65,45 @@
     document.getElementById("lineCount").textContent = `${totalLines} ${plural(totalLines, "linija teksta", "linije teksta", "linija teksta")}`;
   }
 
+  function authUrl(mode = "login") {
+    return `/auth?mode=${mode}&next=${encodeURIComponent(window.location.pathname)}`;
+  }
+
+  function renderAccount() {
+    const sidebarAccount = document.getElementById("sidebarAccount");
+    const accountButton = document.getElementById("accountButton");
+    const mobileAccountButton = document.getElementById("mobileAccountButton");
+
+    if (!state.user) {
+      sidebarAccount.innerHTML = `
+        <a class="account-login" href="${authUrl()}">
+          <i data-lucide="log-in" aria-hidden="true"></i><span>Prijava</span>
+        </a>`;
+      accountButton.href = authUrl();
+      accountButton.innerHTML = '<i data-lucide="log-in" aria-hidden="true"></i><span>Prijava</span>';
+      mobileAccountButton.href = authUrl();
+      refreshIcons();
+      return;
+    }
+
+    const initial = state.user.name.trim().slice(0, 1).toUpperCase();
+    sidebarAccount.innerHTML = `
+      <div class="account-summary">
+        <span class="account-avatar">${escapeHtml(initial)}</span>
+        <span class="account-copy"><strong>${escapeHtml(state.user.name)}</strong><span>${escapeHtml(state.user.email)}</span></span>
+        <button class="account-logout" type="button" data-logout aria-label="Odjava" title="Odjava"><i data-lucide="log-out" aria-hidden="true"></i></button>
+      </div>`;
+    accountButton.href = "#account";
+    accountButton.innerHTML = `<span class="small-avatar">${escapeHtml(initial)}</span><span>${escapeHtml(state.user.name)}</span>`;
+    mobileAccountButton.href = "#account";
+    mobileAccountButton.innerHTML = `<span class="small-avatar">${escapeHtml(initial)}</span>`;
+    document.querySelectorAll('[href="#account"]').forEach((element) => {
+      element.addEventListener("click", (event) => event.preventDefault());
+    });
+    sidebarAccount.querySelector("[data-logout]").addEventListener("click", logout);
+    refreshIcons();
+  }
+
   function render() {
     const query = state.query.trim().toLocaleLowerCase("bs");
     const visible = state.scenarios.filter((scenario) =>
@@ -91,14 +131,14 @@
     }
 
     grid.innerHTML = visible.map((scenario) => `
-      <a class="project-card" href="/editor?id=${scenario.id}" aria-label="Otvori scenarij ${escapeHtml(scenario.title)}">
+      <a class="project-card ${scenario.isDemo ? "demo-card" : ""}" href="/editor?id=${scenario.id}" aria-label="Otvori scenarij ${escapeHtml(scenario.title)}">
         <div class="project-card-top">
           <span class="file-mark"><i data-lucide="file-pen-line" aria-hidden="true"></i></span>
-          <span class="project-open-icon"><i data-lucide="arrow-up-right" aria-hidden="true"></i></span>
+          ${scenario.isDemo ? '<span class="demo-badge">DEMO</span>' : '<span class="project-open-icon"><i data-lucide="arrow-up-right" aria-hidden="true"></i></span>'}
         </div>
         <div>
           <h2 title="${escapeHtml(scenario.title)}">${escapeHtml(scenario.title)}</h2>
-          <p class="project-meta">Scenarij #${scenario.id}</p>
+          <p class="project-meta">${scenario.isDemo ? "Javni primjer · samo pregled" : "Privatni scenarij"}</p>
         </div>
         <footer class="project-footer">
           <span><i data-lucide="align-left" aria-hidden="true"></i>${scenario.lineCount} ${plural(scenario.lineCount, "linija", "linije", "linija")}</span>
@@ -127,8 +167,36 @@
     }
   }
 
+  async function loadSession() {
+    try {
+      const response = await fetch("/api/auth/me");
+      const data = await response.json();
+      state.user = data.user || null;
+    } catch {
+      state.user = null;
+    }
+    renderAccount();
+  }
+
+  async function logout() {
+    try {
+      await fetch("/api/auth/logout", { method: "POST" });
+      state.user = null;
+      await loadScenarios();
+      renderAccount();
+      closeSidebar();
+      showToast("Uspješno si se odjavio.");
+    } catch {
+      showToast("Odjava trenutno nije uspjela.", "error");
+    }
+  }
+
   function openCreateModal() {
     closeSidebar();
+    if (!state.user) {
+      window.location.href = authUrl("register");
+      return;
+    }
     titleInput.value = "";
     modal.showModal();
     requestAnimationFrame(() => titleInput.focus());
@@ -150,6 +218,10 @@
         body: JSON.stringify({ title })
       });
       const data = await response.json();
+      if (response.status === 401) {
+        window.location.href = authUrl();
+        return;
+      }
       if (!response.ok) throw new Error(data.message || "Scenario nije kreiran.");
       window.location.href = `/editor?id=${data.id}`;
     } catch (error) {
@@ -187,6 +259,9 @@
   });
   document.getElementById("mobileMenuButton").addEventListener("click", openSidebar);
   sidebarBackdrop.addEventListener("click", closeSidebar);
+  document.querySelectorAll("[data-close-create-modal]").forEach((button) => {
+    button.addEventListener("click", () => modal.close());
+  });
   confirmCreateButton.addEventListener("click", createScenario);
   titleInput.addEventListener("keydown", (event) => {
     if (event.key === "Enter") {
@@ -196,6 +271,6 @@
   });
 
   refreshIcons();
-  render();
+  loadSession();
   loadScenarios();
 })();

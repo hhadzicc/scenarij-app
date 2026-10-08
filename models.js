@@ -3,11 +3,30 @@ const sequelize = require("./db");
 
 // ============== MODELI ==============
 
+const User = sequelize.define(
+  "User",
+  {
+    id: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
+    name: { type: DataTypes.STRING(80), allowNull: false },
+    email: { type: DataTypes.STRING(254), allowNull: false, unique: true },
+    passwordHash: { type: DataTypes.STRING, allowNull: false }
+  },
+  {
+    tableName: "User",
+    freezeTableName: true,
+    timestamps: true
+  }
+);
+
 const Scenario = sequelize.define(
   "Scenario",
   {
     id: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
     title: { type: DataTypes.STRING, allowNull: false },
+
+    ownerId: { type: DataTypes.INTEGER, allowNull: true },
+    isDemo: { type: DataTypes.BOOLEAN, allowNull: false, defaultValue: false },
+    seedKey: { type: DataTypes.STRING(80), allowNull: true },
 
     // DODATNO (Spirala 4): čuvamo početno stanje scenarija nakon kreiranja
     // da restore može početi od "baseline" stanja
@@ -82,6 +101,9 @@ const Checkpoint = sequelize.define(
 
 // ============== RELACIJE ==============
 
+User.hasMany(Scenario, { foreignKey: "ownerId", onDelete: "CASCADE" });
+Scenario.belongsTo(User, { foreignKey: "ownerId" });
+
 Scenario.hasMany(Line, { foreignKey: "scenarioId", onDelete: "CASCADE" });
 Line.belongsTo(Scenario, { foreignKey: "scenarioId" });
 
@@ -91,4 +113,4 @@ Delta.belongsTo(Scenario, { foreignKey: "scenarioId" });
 Scenario.hasMany(Checkpoint, { foreignKey: "scenarioId", onDelete: "CASCADE" });
 Checkpoint.belongsTo(Scenario, { foreignKey: "scenarioId" });
 
-module.exports = { sequelize, Scenario, Line, Delta, Checkpoint };
+module.exports = { sequelize, User, Scenario, Line, Delta, Checkpoint };

@@ -9,6 +9,7 @@
 
   const state = {
     scenario: null,
+    user: null,
     originalText: new Map(),
     saveTimers: new Map(),
     savingLines: new Set(),
@@ -139,11 +140,13 @@
     textarea.className = "line-textarea";
     textarea.rows = 1;
     textarea.value = line.text;
+    textarea.readOnly = !state.scenario.canEdit;
     textarea.setAttribute("aria-label", `Linija ${index + 1}`);
     textarea.spellcheck = true;
     wrapper.append(textarea);
 
     textarea.addEventListener("input", () => {
+      if (!state.scenario.canEdit) return;
       resizeTextarea(textarea);
       line.text = textarea.value;
       const scenarioLine = state.scenario.content.find((item) => item.lineId === line.lineId);
@@ -190,8 +193,30 @@
       documentElement.innerHTML = '<div class="document-error"><p>Scenario je prazan.</p></div>';
     }
 
+    applyPermissions();
+
     updateAnalysis(analysis);
     refreshIcons();
+  }
+
+  function applyPermissions() {
+    if (!state.scenario) return;
+    const canEdit = state.scenario.canEdit;
+    const readOnlyAction = document.getElementById("readOnlyActionButton");
+    titleInput.readOnly = !canEdit;
+    document.getElementById("createCheckpointButton").hidden = !canEdit;
+    document.getElementById("addLineButton").hidden = !canEdit;
+    document.getElementById("renameCharacterButton").hidden = !canEdit;
+    document.getElementById("renameCharacterSecondaryButton").hidden = !canEdit;
+    document.getElementById("createCheckpointSecondaryButton").hidden = !canEdit;
+    document.querySelectorAll("[data-add-type]").forEach((button) => {
+      button.disabled = !canEdit;
+      button.hidden = !canEdit;
+    });
+    readOnlyAction.hidden = canEdit;
+    readOnlyAction.querySelector("span").textContent = state.user ? "Kopiraj za uređivanje" : "Prijavi se za pisanje";
+
+    if (!canEdit) setSaveState("saved", "Demo · samo za pregled");
   }
 
   function scheduleLineSave(lineId, textarea, wrapper) {
@@ -219,7 +244,10 @@
       state.originalText.set(lineId, value);
       wrapper.classList.remove("saving");
       state.savingLines.delete(lineId);
-      setSaveState("saved", "Sve promjene su sačuvane");
+      setSaveState(
+        scenario.canEdit ? "saved" : "saved",
+        scenario.canEdit ? "Sve promjene su sačuvane" : "Demo · samo za pregled"
+      );
 
       const wordCount = (value.match(/[A-Za-zČĆŽŠĐčćžšđ0-9]+/g) || []).length;
       if (wordCount > 20) await loadScenario({ preserveFocus: false });
@@ -391,6 +419,7 @@
   }
 
   function scheduleTitleSave() {
+    if (!state.scenario?.canEdit) return;
     clearTimeout(state.titleTimer);
     setSaveState("saving", "Nesačuvane promjene");
     state.titleTimer = setTimeout(saveTitle, 700);
@@ -412,6 +441,7 @@
   }
 
   async function addLine(type = "action") {
+    if (!state.scenario?.canEdit) return;
     const templates = {
       scene: "INT. LOKACIJA - DAY",
       action: "",
@@ -462,6 +492,7 @@
   }
 
   async function createCheckpoint() {
+    if (!state.scenario?.canEdit) return;
     try {
       await PoziviAjax.createCheckpoint(scenarioId);
       await loadCheckpoints();
@@ -567,6 +598,25 @@
     }, 5000);
   }
 
+  async function handleReadOnlyAction() {
+    if (!state.user) {
+      window.location.href = `/auth?mode=register&next=${encodeURIComponent(window.location.pathname + window.location.search)}`;
+      return;
+    }
+
+    const button = document.getElementById("readOnlyActionButton");
+    button.disabled = true;
+    button.querySelector("span").textContent = "Kopiranje...";
+    try {
+      const copy = await PoziviAjax.duplicateScenario(scenarioId);
+      window.location.replace(`/editor?id=${copy.id}`);
+    } catch (error) {
+      button.disabled = false;
+      button.querySelector("span").textContent = "Kopiraj za uređivanje";
+      showToast(error.message || "Scenario nije kopiran.", "error");
+    }
+  }
+
   titleInput.addEventListener("input", scheduleTitleSave);
   titleInput.addEventListener("blur", saveTitle);
   document.getElementById("addLineButton").addEventListener("click", () => addLine("action"));
@@ -586,6 +636,7 @@
   document.getElementById("closeInspectorButton").addEventListener("click", closeInspector);
   mobileBackdrop.addEventListener("click", closeMobilePanels);
   document.getElementById("closeVersionPreviewButton").addEventListener("click", () => versionModal.close());
+  document.getElementById("readOnlyActionButton").addEventListener("click", handleReadOnlyAction);
   document.querySelectorAll(".inspector-tab").forEach((tab) => {
     tab.addEventListener("click", () => selectInspectorPanel(tab.dataset.panel));
   });
@@ -597,8 +648,18 @@
     }
   });
 
-  refreshIcons();
-  loadScenario();
-  loadCheckpoints();
-  startPolling();
+  async function boot() {
+    refreshIcons();
+    try {
+      const session = await PoziviAjax.getCurrentUser();
+      state.user = session.user || null;
+    } catch {
+      state.user = null;
+    }
+    await loadScenario();
+    await loadCheckpoints();
+    startPolling();
+  }
+
+  boot();
 })();

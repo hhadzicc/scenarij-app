@@ -292,6 +292,24 @@ input:focus-visible {
   color: var(--ink);
 }
 
+.tool-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
+}
+
+.scenario-title-input[readonly] {
+  cursor: default;
+}
+
+.line-textarea[readonly] {
+  cursor: text;
+}
+
+.line-textarea[readonly]:focus {
+  background: transparent;
+  box-shadow: none;
+}
+
 .tool-button svg {
   width: 16px;
   height: 16px;

@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="bs">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#171a1f">
+  <title>Prijava - ScenarijPro</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Manrope:wght@600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../css/auth.css">
+</head>
+<body>
+  <main class="auth-layout">
+    <section class="auth-intro" aria-labelledby="introTitle">
+      <a class="brand" href="/" aria-label="ScenarijPro početna">
+        <span class="brand-mark">S</span>
+        <span>Scenarij<span>Pro</span></span>
+      </a>
+      <div class="intro-copy">
+        <p class="eyebrow">TVORNIČKI MIR ZA DOBRE PRIČE</p>
+        <h1 id="introTitle">Piši bez buke.<br>Priča ostaje u fokusu.</h1>
+        <p>Organizuj scene, prati likove i sačuvaj važne verzije scenarija u jednom urednom radnom prostoru.</p>
+      </div>
+      <div class="intro-note">
+        <i data-lucide="shield-check" aria-hidden="true"></i>
+        <span>Tvoji privatni scenariji dostupni su samo tebi.</span>
+      </div>
+    </section>
+
+    <section class="auth-panel">
+      <div class="auth-box">
+        <a class="back-link" href="/"><i data-lucide="arrow-left" aria-hidden="true"></i> Nazad na demo scenarije</a>
+
+        <div class="auth-heading">
+          <h2 id="authTitle">Dobro došao nazad</h2>
+          <p id="authDescription">Prijavi se i nastavi gdje si stao.</p>
+        </div>
+
+        <div class="auth-tabs" role="tablist" aria-label="Prijava ili registracija">
+          <button class="auth-tab active" type="button" role="tab" data-mode="login" aria-selected="true">Prijava</button>
+          <button class="auth-tab" type="button" role="tab" data-mode="register" aria-selected="false">Novi račun</button>
+        </div>
+
+        <form class="auth-form" id="authForm" novalidate>
+          <label class="field" id="nameField" for="name" hidden>
+            <span>Ime</span>
+            <span class="input-wrap"><i data-lucide="user-round" aria-hidden="true"></i><input id="name" name="name" type="text" maxlength="80" autocomplete="name" placeholder="Tvoje ime"></span>
+          </label>
+          <label class="field" for="email">
+            <span>Email adresa</span>
+            <span class="input-wrap"><i data-lucide="mail" aria-hidden="true"></i><input id="email" name="email" type="email" maxlength="254" autocomplete="email" placeholder="ime@primjer.com" required></span>
+          </label>
+          <label class="field" for="password">
+            <span>Lozinka</span>
+            <span class="input-wrap"><i data-lucide="lock-keyhole" aria-hidden="true"></i><input id="password" name="password" type="password" minlength="8" maxlength="128" autocomplete="current-password" placeholder="Najmanje 8 znakova" required><button class="password-toggle" id="passwordToggle" type="button" aria-label="Prikaži lozinku"><i data-lucide="eye" aria-hidden="true"></i></button></span>
+          </label>
+          <p class="form-error" id="formError" role="alert" hidden></p>
+          <button class="submit-button" id="submitButton" type="submit"><span>Prijavi se</span><i data-lucide="arrow-right" aria-hidden="true"></i></button>
+        </form>
+
+        <p class="auth-footnote">Možeš prvo pregledati javne demo scenarije bez računa.</p>
+      </div>
+    </section>
+  </main>
+
+  <script src="https://unpkg.com/lucide@0.468.0/dist/umd/lucide.js"></script>
+  <script src="../js/auth.js"></script>
+</body>
+</html>
