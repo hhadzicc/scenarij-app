@@ -1,5 +1,6 @@
 const express = require("express");
 const path = require("path");
+const { Op } = require("sequelize");
 
 const { sequelize, Scenario, Line, Delta, Checkpoint } = require("./models");
 const { seedDatabase } = require("./seed");
@@ -19,6 +20,9 @@ app.get("/health", async (_req, res) => {
 // Static i homepage
 app.use(express.static(path.join(__dirname)));
 app.get("/", (req, res) => {
+  res.sendFile(path.join(__dirname, "html", "projects.html"));
+});
+app.get("/editor", (req, res) => {
   res.sendFile(path.join(__dirname, "html", "writing.html"));
 });
 
@@ -152,6 +156,32 @@ async function dbNextLineIdValue(scenarioId) {
 
 // =================== RUTE (S3) ===================
 
+// GET /api/scenarios
+app.get("/api/scenarios", async (_req, res) => {
+  try {
+    const scenarios = await Scenario.findAll({ order: [["id", "DESC"]] });
+    const result = await Promise.all(
+      scenarios.map(async (scenario) => {
+        const [lineCount, lastDelta] = await Promise.all([
+          Line.count({ where: { scenarioId: scenario.id } }),
+          Delta.max("timestamp", { where: { scenarioId: scenario.id } })
+        ]);
+
+        return {
+          id: scenario.id,
+          title: scenario.title,
+          lineCount,
+          updatedAt: Number(lastDelta) || null
+        };
+      })
+    );
+
+    return res.status(200).json(result);
+  } catch {
+    return res.status(500).json({ message: "Scenarije trenutno nije moguce ucitati." });
+  }
+});
+
 // POST /api/scenarios
 app.post("/api/scenarios", async (req, res) => {
   const titleRaw = req.body?.title;
@@ -179,6 +209,86 @@ app.post("/api/scenarios", async (req, res) => {
     title: sc.title,
     content: [{ lineId: 1, nextLineId: null, text: "" }]
   });
+});
+
+// PATCH /api/scenarios/:scenarioId
+app.patch("/api/scenarios/:scenarioId", async (req, res) => {
+  const scenarioId = Number(req.params.scenarioId);
+  const title = String(req.body?.title ?? "").trim();
+
+  if (!title) return res.status(400).json({ message: "Naslov je obavezan." });
+
+  const scenario = await Scenario.findByPk(scenarioId);
+  if (!scenario) return res.status(404).json({ message: "Scenario ne postoji!" });
+
+  scenario.title = title.slice(0, 160);
+  await scenario.save();
+
+  return res.status(200).json({ id: scenario.id, title: scenario.title });
+});
+
+// POST /api/scenarios/:scenarioId/lines
+app.post("/api/scenarios/:scenarioId/lines", async (req, res) => {
+  const scenarioId = Number(req.params.scenarioId);
+  const text = String(req.body?.text ?? "");
+
+  const scenario = await Scenario.findByPk(scenarioId);
+  if (!scenario) return res.status(404).json({ message: "Scenario ne postoji!" });
+
+  try {
+    const created = await sequelize.transaction(async (transaction) => {
+      const lines = await dbGetLines(scenarioId);
+      const ordered = getOrderedContent(lines);
+      const previous = ordered.at(-1) || null;
+      const lineId = await dbNextLineIdValue(scenarioId);
+
+      const line = await Line.create(
+        { scenarioId, lineId, nextLineId: null, text },
+        { transaction }
+      );
+
+      if (previous) {
+        await Line.update(
+          { nextLineId: lineId },
+          { where: { scenarioId, lineId: previous.lineId }, transaction }
+        );
+
+        await Delta.create(
+          {
+            scenarioId,
+            type: "line_update",
+            lineId: previous.lineId,
+            nextLineId: lineId,
+            content: previous.text,
+            timestamp: nowUnixSeconds()
+          },
+          { transaction }
+        );
+      }
+
+      await Delta.create(
+        {
+          scenarioId,
+          type: "line_update",
+          lineId,
+          nextLineId: null,
+          content: text,
+          timestamp: nowUnixSeconds()
+        },
+        { transaction }
+      );
+
+      return line;
+    });
+
+    return res.status(201).json({
+      lineId: created.lineId,
+      nextLineId: created.nextLineId,
+      text: created.text
+    });
+  } catch {
+    return res.status(500).json({ message: "Nova linija nije sacuvana." });
+  }
 });
 
 // POST /api/scenarios/:scenarioId/lines/:lineId/lock
@@ -425,7 +535,7 @@ app.get("/api/scenarios/:scenarioId/deltas", async (req, res) => {
   const deltas = await Delta.findAll({
     where: {
       scenarioId,
-      timestamp: { [require("sequelize").Op.gt]: since }
+      timestamp: { [Op.gt]: since }
     },
     order: [["timestamp", "ASC"], ["id", "ASC"]]
   });
@@ -515,7 +625,7 @@ app.get("/api/scenarios/:scenarioId/restore/:checkpointId", async (req, res) => 
   const deltas = await Delta.findAll({
     where: {
       scenarioId,
-      timestamp: { [require("sequelize").Op.lte]: checkpointTs }
+      timestamp: { [Op.lte]: checkpointTs }
     },
     order: [["timestamp", "ASC"], ["id", "ASC"]]
   });

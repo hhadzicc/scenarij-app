@@ -1,194 +1,209 @@
 <!DOCTYPE html>
 <html lang="bs">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>ScenarijPro - Pisanje scenarija</title>
-
-  <link href="https://fonts.googleapis.com/css2?family=Courier+Prime:wght@400;700&family=Inter:wght@400;600;700&family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
-
-  <link rel="stylesheet" href="../css/writing.css" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#ffffff">
+  <title>ScenarijPro - Editor</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Courier+Prime:wght@400;700&family=Inter:wght@400;500;600;700&family=Manrope:wght@600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../css/writing.css">
 </head>
 <body>
-  <header class="topbar">
-    <div class="topbar-left">
-      <button class="icon-btn" aria-label="Nazad">
-        <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true">
-          <path d="M15 18l-6-6 6-6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-        </svg>
-      </button>
-      <h1 class="project-title">THE LAST STARSHIP (Draft 2)</h1>
+  <header class="editor-header">
+    <div class="header-leading">
+      <a class="icon-button" href="/" aria-label="Nazad na scenarije" title="Svi scenariji">
+        <i data-lucide="arrow-left" aria-hidden="true"></i>
+      </a>
+      <a class="editor-brand" href="/" aria-label="ScenarijPro">
+        <span class="brand-mark">S</span>
+      </a>
+      <span class="header-divider" aria-hidden="true"></span>
+      <div class="title-group">
+        <input class="scenario-title-input" id="scenarioTitle" type="text" maxlength="160" aria-label="Naslov scenarija" value="Učitavanje...">
+        <span class="save-state" id="saveState"><i data-lucide="loader-circle" aria-hidden="true"></i> Učitavanje</span>
+      </div>
     </div>
 
-    <nav class="topbar-center">
-      <button class="chip">SCENA</button>
-      <button class="chip">AKCIJA</button>
-      <button class="chip">LIK</button>
-      <button class="chip">DIJALOG</button>
-    </nav>
-
-    <div class="topbar-right">
-      <button class="save-btn">SPASI</button>
+    <div class="header-actions">
+      <button class="icon-button mobile-only" id="openOutlineButton" type="button" aria-label="Otvori scene" title="Scene">
+        <i data-lucide="panel-left" aria-hidden="true"></i>
+      </button>
+      <button class="secondary-button checkpoint-button" id="createCheckpointButton" type="button">
+        <i data-lucide="bookmark-plus" aria-hidden="true"></i>
+        <span>Sačuvaj verziju</span>
+      </button>
+      <button class="icon-button" id="openInspectorButton" type="button" aria-label="Otvori alatke" title="Alatke">
+        <i data-lucide="panel-right" aria-hidden="true"></i>
+      </button>
     </div>
   </header>
 
-  <!-- TOOLBAR ZA METODE MODULA -->
-  <div class="toolbar">
-    <div class="toolbar-section">
-      <button class="toolbar-btn" id="btnBold">Bold</button>
-      <button class="toolbar-btn" id="btnItalic">Italic</button>
-      <button class="toolbar-btn" id="btnUnderline">Underline</button>
+  <div class="format-toolbar" role="toolbar" aria-label="Alati za pisanje">
+    <div class="toolbar-scroll">
+      <span class="toolbar-label">Dodaj</span>
+      <button class="tool-button" type="button" data-add-type="scene"><i data-lucide="clapperboard" aria-hidden="true"></i><span>Scena</span></button>
+      <button class="tool-button" type="button" data-add-type="action"><i data-lucide="move-right" aria-hidden="true"></i><span>Akcija</span></button>
+      <button class="tool-button" type="button" data-add-type="character"><i data-lucide="user-round" aria-hidden="true"></i><span>Lik</span></button>
+      <button class="tool-button" type="button" data-add-type="dialogue"><i data-lucide="message-square-text" aria-hidden="true"></i><span>Dijalog</span></button>
+      <span class="toolbar-separator" aria-hidden="true"></span>
+      <button class="tool-button" id="renameCharacterButton" type="button"><i data-lucide="replace" aria-hidden="true"></i><span>Preimenuj lik</span></button>
     </div>
-
-    <div class="toolbar-separator"></div>
-
-    <div class="toolbar-section">
-      <button class="toolbar-btn" id="btnBrojRijeci">Broj riječi</button>
-      <button class="toolbar-btn" id="btnUloge">Uloge</button>
-      <button class="toolbar-btn" id="btnPogresnaUloga">Pogrešne uloge</button>
-    </div>
-
-    <div class="toolbar-separator"></div>
-
-    <div class="toolbar-section">
-      <button class="toolbar-btn" id="btnBrojLinija">Broj linija (uloga)</button>
-      <button class="toolbar-btn" id="btnScenarijUloge">Scenarij uloge</button>
-      <button class="toolbar-btn" id="btnGrupisiUloge">Grupisi uloge</button>
-    </div>
-
-    <!-- ✅ NOVO: Backend sekcija (Spirala 3) -->
-    <div class="toolbar-separator"></div>
-
-    <div class="toolbar-section">
-      <input class="toolbar-input" id="inpScenarioId" type="number" placeholder="scenarioId" value="1">
-      <input class="toolbar-input" id="inpUserId" type="number" placeholder="userId" value="1">
-      <button class="toolbar-btn" id="btnLoadScenario">Učitaj</button>
-      <button class="toolbar-btn" id="btnCreateScenario">Novi</button>
-    </div>
-
-    <div class="toolbar-separator"></div>
-
-    <div class="toolbar-section">
-      <input class="toolbar-input" id="inpLineId" type="number" placeholder="lineId">
-      <button class="toolbar-btn" id="btnLockLine">Lock liniju</button>
-      <button class="toolbar-btn" id="btnUpdateLine">Update liniju</button>
-    </div>
-
-    <div class="toolbar-separator"></div>
-
-    <div class="toolbar-section">
-      <input class="toolbar-input" id="inpCharOld" type="text" placeholder="oldName (ALICE)">
-      <input class="toolbar-input" id="inpCharNew" type="text" placeholder="newName (ALICIA)">
-      <button class="toolbar-btn" id="btnLockChar">Lock ime</button>
-      <button class="toolbar-btn" id="btnUpdateChar">Rename</button>
-    </div>
+    <div class="toolbar-counter" id="toolbarCounter">0 riječi</div>
   </div>
 
-  <!-- DIV ZA PORUKE -->
-  <div id="poruke"></div>
-
-  <main class="layout">
-    <aside class="sidebar">
-      <h2 class="sidebar-title">Scene <span class="scene-count">(3)</span></h2>
-
-      <ol class="scene-list">
-        <li class="scene-item active">
-          <div class="scene-main">
-            <span class="scene-num">1.</span>
-            <span class="scene-title">INT. STARSHIP BRIDGE – NIGHT</span>
-          </div>
-          <div class="scene-pages">5/8</div>
-        </li>
-
-        <li class="scene-item">
-          <div class="scene-main">
-            <span class="scene-num">2.</span>
-            <span class="scene-title">EXT. ASTEROID FIELD – DAY</span>
-          </div>
-          <div class="scene-pages">3/8</div>
-        </li>
-
-        <li class="scene-item">
-          <div class="scene-main">
-            <span class="scene-num">3.</span>
-            <span class="scene-title">INT. ENGINE ROOM – NIGHT</span>
-          </div>
-          <div class="scene-pages">2/8</div>
-        </li>
-      </ol>
+  <main class="editor-layout">
+    <aside class="outline-panel" id="outlinePanel" aria-label="Scene">
+      <div class="panel-heading">
+        <div>
+          <span class="panel-eyebrow">STRUKTURA</span>
+          <h2>Scene</h2>
+        </div>
+        <button class="icon-button mobile-only" id="closeOutlineButton" type="button" aria-label="Zatvori scene">
+          <i data-lucide="x" aria-hidden="true"></i>
+        </button>
+      </div>
+      <nav class="scene-list" id="sceneList" aria-label="Lista scena"></nav>
+      <div class="outline-footer">
+        <span><i data-lucide="file-text" aria-hidden="true"></i><strong id="outlineLineCount">0</strong> linija</span>
+        <span><i data-lucide="users-round" aria-hidden="true"></i><strong id="outlineCharacterCount">0</strong> likova</span>
+      </div>
     </aside>
 
-    <!-- EDITOR dio sa contenteditable -->
-    <section class="editor-wrap">
-      <article class="editor-paper">
-<div id="divEditor" contenteditable="true">
-
-INT. KUHINJA LEJLINOG STANA - MORNING<br><br>
-
-LEJLA<br>
-(tiho)<br>
-Opet kasnim na predavanje... <br>
-Šta ako ovaj put profesor stvarno uradi prozivku?<br><br>
-
-AMIR<br>
-Smiri se, još imaš vremena. Tramvaj ide za pet minuta.<br><br>
-
-TIM<br>
-(s mobitelom u ruci)<br>
-Lejla, upravo sam dobio poruku da je laboratorijska vježba odgođena.<br><br>
-
-LEJLA<br>
-Ozbiljno? To je <b>najbolja vijest</b> danas.<br><br>
-
-TIM<br>
-Ali parcijala nije odgođena, samo vježbe.<br><br>
-
-TIN<br>
-Ti si uvijek previše opušten, Tim.<br><br>
-
-[U stanu nakratko nastaje tišina dok svi gledaju u sat na zidu.]<br><br>
-
-LEJLA<br>
-Dobro, hajde da ponovimo još jedan zadatak iz <i>Web tehnologija</i>.<br><br>
-
-Amir pali kuhalo za vodu i gleda kroz prozor, zamišljeno posmatra jutarnju maglu.<br><br>
-
-EXT. ULICA ISPRED FAKULTETA - DAY<br><br>
-
-Studenti užurbano prolaze ispred glavnog ulaza ETF-a, noseći ruksake i skripte.<br><br>
-
-TIM<br>
-Ako opet zaboraviš uploadovati spiralu na vrijeme, neću te više podsjećati.<br><br>
-
-LEJLA<br>
-Ma hoćeš, znam ja tebe.<br><br>
-
-TIM<br>
-(uz osmijeh)<br>
-Vidjećemo već večeras.<br><br>
-
-TIMM<br>
-Ne mogu vjerovati da sam ja pogrešno upisan u raspored.<br><br>
-
-Automobil trubi dok prelaze cestu prema fakultetu.<br><br>
-
-AMIR<br>
-Hajde, ljudi, zakasnićemo na uvodno predavanje.<br><br>
-
-INT. PREDAVAONICA ETF-A - AFTERNOON<br><br>
-
-Prazna učionica čeka prve studente.<br>
-Na projektoru stoji naslov: "[WEB TEHNOLOGIJE - SPIRALA 2]".<br>
-
-</div>
-      </article>
+    <section class="document-stage" aria-label="Editor scenarija">
+      <div class="document-shell">
+        <div class="document-ruler" aria-hidden="true">
+          <span>SCENARIJ</span>
+          <span id="documentPageEstimate">1 STRANICA</span>
+        </div>
+        <article class="document-paper" id="scriptDocument" aria-live="polite">
+          <div class="document-loading">
+            <span class="loading-spinner" aria-hidden="true"></span>
+            <span>Otvaranje scenarija...</span>
+          </div>
+        </article>
+        <button class="add-line-button" id="addLineButton" type="button">
+          <i data-lucide="plus" aria-hidden="true"></i>
+          <span>Dodaj novu liniju</span>
+        </button>
+      </div>
     </section>
+
+    <aside class="inspector-panel" id="inspectorPanel" aria-label="Alatke scenarija">
+      <div class="panel-heading inspector-heading">
+        <div>
+          <span class="panel-eyebrow">PREGLED</span>
+          <h2>Alatke</h2>
+        </div>
+        <button class="icon-button" id="closeInspectorButton" type="button" aria-label="Zatvori alatke">
+          <i data-lucide="x" aria-hidden="true"></i>
+        </button>
+      </div>
+
+      <div class="inspector-tabs" role="tablist" aria-label="Pregled scenarija">
+        <button class="inspector-tab active" type="button" role="tab" data-panel="statsPanel" aria-selected="true">Pregled</button>
+        <button class="inspector-tab" type="button" role="tab" data-panel="charactersPanel" aria-selected="false">Likovi</button>
+        <button class="inspector-tab" type="button" role="tab" data-panel="historyPanel" aria-selected="false">Verzije</button>
+      </div>
+
+      <section class="inspector-content active" id="statsPanel" role="tabpanel">
+        <div class="stats-grid">
+          <div class="stat-item"><span>Riječi</span><strong id="wordCount">0</strong></div>
+          <div class="stat-item"><span>Linije</span><strong id="lineCount">0</strong></div>
+          <div class="stat-item"><span>Scene</span><strong id="sceneCount">0</strong></div>
+          <div class="stat-item"><span>Likovi</span><strong id="characterCount">0</strong></div>
+        </div>
+        <div class="insight-block">
+          <h3>Struktura teksta</h3>
+          <div class="structure-bars" id="structureBars"></div>
+        </div>
+        <div class="insight-block">
+          <h3>Provjera imena</h3>
+          <div class="review-result" id="nameReview">
+            <i data-lucide="badge-check" aria-hidden="true"></i>
+            <p>Nema očiglednih grešaka u imenima likova.</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="inspector-content" id="charactersPanel" role="tabpanel" hidden>
+        <div class="section-intro">
+          <h3>Likovi u scenariju</h3>
+          <p>Imena su izdvojena iz replika i oznaka likova.</p>
+        </div>
+        <div class="character-list" id="characterList"></div>
+        <button class="wide-secondary-button" id="renameCharacterSecondaryButton" type="button">
+          <i data-lucide="replace" aria-hidden="true"></i>
+          Preimenuj lik u cijelom scenariju
+        </button>
+      </section>
+
+      <section class="inspector-content" id="historyPanel" role="tabpanel" hidden>
+        <div class="section-intro">
+          <h3>Sačuvane verzije</h3>
+          <p>Kreiraj checkpoint prije većih izmjena i kasnije pregledaj njegov sadržaj.</p>
+        </div>
+        <button class="wide-primary-button" id="createCheckpointSecondaryButton" type="button">
+          <i data-lucide="bookmark-plus" aria-hidden="true"></i>
+          Sačuvaj trenutnu verziju
+        </button>
+        <div class="history-list" id="historyList"></div>
+      </section>
+    </aside>
   </main>
 
-  <!-- JS moduli -->
-  <script src="../js/PoziviAjaxFetch.js"></script>
-  <script src="../js/EditorTeksta.js"></script>
-  <script src="../js/editor.js"></script>
+  <div class="mobile-backdrop" id="mobileBackdrop" hidden></div>
 
+  <dialog class="modal" id="renameCharacterModal">
+    <form method="dialog" class="modal-content" id="renameCharacterForm">
+      <div class="modal-heading">
+        <div>
+          <span class="modal-icon"><i data-lucide="replace" aria-hidden="true"></i></span>
+          <h2>Preimenuj lik</h2>
+          <p>Ime će biti zamijenjeno u svim linijama ovog scenarija.</p>
+        </div>
+        <button class="icon-button" value="cancel" type="submit" aria-label="Zatvori">
+          <i data-lucide="x" aria-hidden="true"></i>
+        </button>
+      </div>
+      <div class="form-grid">
+        <label class="form-field" for="oldCharacterName">
+          <span>Trenutno ime</span>
+          <input id="oldCharacterName" type="text" placeholder="Npr. ALICE" required>
+        </label>
+        <label class="form-field" for="newCharacterName">
+          <span>Novo ime</span>
+          <input id="newCharacterName" type="text" placeholder="Npr. ALICIA" required>
+        </label>
+      </div>
+      <div class="modal-actions">
+        <button class="secondary-button" value="cancel" type="submit">Odustani</button>
+        <button class="primary-button" id="confirmRenameButton" type="button">Preimenuj</button>
+      </div>
+    </form>
+  </dialog>
+
+  <dialog class="modal version-modal" id="versionPreviewModal">
+    <div class="modal-content">
+      <div class="modal-heading">
+        <div>
+          <span class="modal-icon"><i data-lucide="history" aria-hidden="true"></i></span>
+          <h2>Pregled verzije</h2>
+          <p id="versionPreviewDate"></p>
+        </div>
+        <button class="icon-button" id="closeVersionPreviewButton" type="button" aria-label="Zatvori">
+          <i data-lucide="x" aria-hidden="true"></i>
+        </button>
+      </div>
+      <pre class="version-preview" id="versionPreviewContent"></pre>
+    </div>
+  </dialog>
+
+  <div class="toast-region" id="toastRegion" aria-live="polite" aria-atomic="true"></div>
+
+  <script src="https://unpkg.com/lucide@0.468.0/dist/umd/lucide.js"></script>
+  <script src="../js/PoziviAjaxFetch.js"></script>
+  <script src="../js/editor.js"></script>
 </body>
 </html>

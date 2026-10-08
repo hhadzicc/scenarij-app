@@ -1,89 +1,129 @@
 <!DOCTYPE html>
 <html lang="bs">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ScenarijPro - Projekti</title>
-    <link rel="stylesheet" href="../css/projects.css">
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#171a1f">
+  <title>ScenarijPro - Projekti</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Manrope:wght@600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../css/projects.css">
 </head>
 <body>
-    <div class="container">
-        <!-- Lijevi Sidebar -->
-        <aside class="sidebar">
-            <div class="sidebar-content">
-                <h1 class="app-title">ScenarijPro</h1>
-                
-                <nav class="nav-menu">
-                    <a href="#" class="nav-item active">Projekti</a>
-                    <a href="#" class="nav-item">Statistika</a>
-                    <a href="#" class="nav-item">Postavke</a>
-                </nav>
-                
-                <hr class="divider">
-                
-                <div class="user-profile">
-                    <div class="user-avatar">U</div>
-                    <div class="user-info">
-                        <div class="user-name">User Name</div>
-                        <div class="user-status">Pro member</div>
-                    </div>
-                </div>
-            </div>
-        </aside>
+  <div class="app-shell">
+    <aside class="app-sidebar" id="appSidebar" aria-label="Glavna navigacija">
+      <a class="brand" href="/" aria-label="ScenarijPro početna">
+        <span class="brand-mark" aria-hidden="true">S</span>
+        <span>Scenarij<span>Pro</span></span>
+      </a>
 
-        <!-- Glavni dio -->
-        <main class="main-content">
-            <header class="page-header">
-                <h1>Svi scenariji</h1>
-                <div class="header-actions">
-                    <input type="text" class="search-input" placeholder="Pretraga">
-                    <button class="btn-new-project">+ Novi projekat</button>
-                </div>
-            </header>
+      <nav class="primary-nav">
+        <a class="nav-link active" href="/">
+          <i data-lucide="files" aria-hidden="true"></i>
+          <span>Scenariji</span>
+        </a>
+        <button class="nav-link" type="button" id="sidebarCreateButton">
+          <i data-lucide="file-plus-2" aria-hidden="true"></i>
+          <span>Novi scenarij</span>
+        </button>
+      </nav>
 
-            <div class="projects-grid">
-                <!-- Kartica 1 - Aktivna -->
-                <div class="project-card active">
-                    <div class="active-badge">Aktivan</div>
-                    <h2 class="project-title">POSLJEDNJI ZVJEZDANI BROD</h2>
-                    <p class="project-description">Sci-Fi Dugometražni Film</p>
-                    <div class="project-details">
-                        <p><strong>Status:</strong> Druga verzija</p>
-                        <p><strong>Broj stranica:</strong> 105</p>
-                        <p><strong>Vrijeme posljednje izmjene:</strong> 2 sata prije</p>
-                    </div>
-                </div>
+      <div class="sidebar-note">
+        <span class="connection-dot" aria-hidden="true"></span>
+        <div>
+          <strong>Radni prostor je online</strong>
+          <span>Promjene se čuvaju automatski</span>
+        </div>
+      </div>
+    </aside>
 
-                <!-- Kartica 2 -->
-                <div class="project-card">
-                    <h2 class="project-title">GRAD TIŠINE</h2>
-                    <p class="project-description">Misterija TV Pilot (45 min)</p>
-                    <div class="project-details">
-                        <p><strong>Status:</strong> Outline završen</p>
-                        <p><strong>Broj stranica:</strong> 12</p>
-                        <p><strong>Vrijeme posljednje izmjene:</strong> Jučer</p>
-                    </div>
-                </div>
+    <div class="page-area">
+      <header class="mobile-header">
+        <button class="icon-button" id="mobileMenuButton" type="button" aria-label="Otvori meni">
+          <i data-lucide="menu" aria-hidden="true"></i>
+        </button>
+        <a class="mobile-brand" href="/">ScenarijPro</a>
+        <button class="icon-button accent" id="mobileCreateButton" type="button" aria-label="Novi scenarij">
+          <i data-lucide="plus" aria-hidden="true"></i>
+        </button>
+      </header>
 
-                <!-- Kartica 3 -->
-                <div class="project-card">
-                    <h2 class="project-title">TAJNA ARHITEKTE</h2>
-                    <p class="project-description">Triler Kratki Film</p>
-                    <div class="project-details">
-                        <p><strong>Status:</strong> Finalna verzija</p>
-                        <p><strong>Broj stranica:</strong> 28</p>
-                        <p><strong>Vrijeme posljednje izmjene:</strong> 3 sedmice prije</p>
-                    </div>
-                </div>
+      <main class="projects-main">
+        <header class="page-heading">
+          <div>
+            <p class="eyebrow">RADNI PROSTOR</p>
+            <h1>Scenariji</h1>
+            <p class="page-description">Nastavi pisanje ili započni novu priču.</p>
+          </div>
+          <button class="primary-button" id="createScenarioButton" type="button">
+            <i data-lucide="plus" aria-hidden="true"></i>
+            <span>Novi scenarij</span>
+          </button>
+        </header>
 
-                <!-- Kartica add new-->
-                <div class="project-card new-project">
-                    <div class="new-project-icon">+</div>
-                    <p class="new-project-text">Kreiraj novi scenarij</p>
-                </div>
-            </div>
-        </main>
+        <section class="project-tools" aria-label="Pretraga i pregled scenarija">
+          <label class="search-field" for="scenarioSearch">
+            <i data-lucide="search" aria-hidden="true"></i>
+            <input id="scenarioSearch" type="search" placeholder="Pretraži scenarije" autocomplete="off">
+          </label>
+          <div class="view-switch" role="group" aria-label="Način prikaza">
+            <button class="view-button active" type="button" data-view="grid" aria-label="Prikaz kartica" title="Kartice">
+              <i data-lucide="layout-grid" aria-hidden="true"></i>
+            </button>
+            <button class="view-button" type="button" data-view="list" aria-label="Prikaz liste" title="Lista">
+              <i data-lucide="list" aria-hidden="true"></i>
+            </button>
+          </div>
+        </section>
+
+        <div class="project-summary" aria-live="polite">
+          <span id="scenarioCount">0 scenarija</span>
+          <span class="summary-separator" aria-hidden="true"></span>
+          <span id="lineCount">0 linija teksta</span>
+        </div>
+
+        <section class="projects-grid" id="projectsGrid" aria-label="Scenariji">
+          <div class="loading-state">
+            <span class="loading-spinner" aria-hidden="true"></span>
+            <span>Učitavanje scenarija...</span>
+          </div>
+        </section>
+      </main>
     </div>
+  </div>
+
+  <div class="sidebar-backdrop" id="sidebarBackdrop" hidden></div>
+
+  <dialog class="modal" id="createScenarioModal">
+    <form method="dialog" class="modal-content" id="createScenarioForm">
+      <div class="modal-heading">
+        <div>
+          <span class="modal-icon"><i data-lucide="file-plus-2" aria-hidden="true"></i></span>
+          <h2>Novi scenarij</h2>
+          <p>Daj radni naslov svojoj priči. Možeš ga promijeniti kasnije.</p>
+        </div>
+        <button class="icon-button" value="cancel" type="submit" aria-label="Zatvori">
+          <i data-lucide="x" aria-hidden="true"></i>
+        </button>
+      </div>
+      <label class="form-field" for="scenarioTitle">
+        <span>Naslov scenarija</span>
+        <input id="scenarioTitle" name="title" type="text" maxlength="160" placeholder="Npr. Grad bez sna" required>
+      </label>
+      <div class="modal-actions">
+        <button class="secondary-button" value="cancel" type="submit">Odustani</button>
+        <button class="primary-button" id="confirmCreateButton" type="button">
+          <span>Kreiraj i otvori</span>
+          <i data-lucide="arrow-right" aria-hidden="true"></i>
+        </button>
+      </div>
+    </form>
+  </dialog>
+
+  <div class="toast-region" id="toastRegion" aria-live="polite" aria-atomic="true"></div>
+
+  <script src="https://unpkg.com/lucide@0.468.0/dist/umd/lucide.js"></script>
+  <script src="../js/projects.js"></script>
 </body>
 </html>
