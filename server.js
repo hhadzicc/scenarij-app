@@ -809,7 +809,7 @@ app.get("/api/scenarios/:scenarioId", async (req, res) => {
   });
 });
 
-// =================== RUTE (S4) ===================
+// =================== VERZIJE SCENARIJA ===================
 
 // POST /api/scenarios/:scenarioId/checkpoint
 app.post("/api/scenarios/:scenarioId/checkpoint", requireAuth, async (req, res) => {

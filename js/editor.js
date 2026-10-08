@@ -203,6 +203,8 @@
     if (!state.scenario) return;
     const canEdit = state.scenario.canEdit;
     const readOnlyAction = document.getElementById("readOnlyActionButton");
+    document.body.classList.toggle("scenario-read-only", !canEdit);
+    document.querySelector(".format-toolbar").hidden = !canEdit;
     titleInput.readOnly = !canEdit;
     document.getElementById("createCheckpointButton").hidden = !canEdit;
     document.getElementById("addLineButton").hidden = !canEdit;
@@ -244,10 +246,7 @@
       state.originalText.set(lineId, value);
       wrapper.classList.remove("saving");
       state.savingLines.delete(lineId);
-      setSaveState(
-        scenario.canEdit ? "saved" : "saved",
-        scenario.canEdit ? "Sve promjene su sačuvane" : "Demo · samo za pregled"
-      );
+      setSaveState("saved", "Sve promjene su sačuvane");
 
       const wordCount = (value.match(/[A-Za-zČĆŽŠĐčćžšđ0-9]+/g) || []).length;
       if (wordCount > 20) await loadScenario({ preserveFocus: false });

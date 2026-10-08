@@ -28,8 +28,7 @@ const Scenario = sequelize.define(
     isDemo: { type: DataTypes.BOOLEAN, allowNull: false, defaultValue: false },
     seedKey: { type: DataTypes.STRING(80), allowNull: true },
 
-    // DODATNO (Spirala 4): čuvamo početno stanje scenarija nakon kreiranja
-    // da restore može početi od "baseline" stanja
+    // Baseline used to reconstruct saved scenario versions.
     initialSnapshot: { type: DataTypes.TEXT, allowNull: true }
   },
   {

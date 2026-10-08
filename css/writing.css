@@ -32,6 +32,10 @@ body {
   height: 100%;
 }
 
+body.scenario-read-only {
+  --toolbar-height: 0px;
+}
+
 body {
   margin: 0;
   overflow: hidden;
@@ -531,7 +535,7 @@ body.inspector-hidden .inspector-panel {
 
 .script-line {
   position: relative;
-  margin: 0 0 15px;
+  margin: 0 0 9px;
 }
 
 .script-line::before {
@@ -546,7 +550,7 @@ body.inspector-hidden .inspector-panel {
 .line-textarea {
   display: block;
   width: 100%;
-  min-height: 28px;
+  min-height: 25px;
   resize: none;
   overflow: hidden;
   border: 0;
@@ -554,7 +558,7 @@ body.inspector-hidden .inspector-panel {
   outline: 0;
   background: transparent;
   color: #202124;
-  font: 400 14px/1.62 "Courier Prime", "Courier New", monospace;
+  font: 400 14px/1.5 "Courier Prime", "Courier New", monospace;
 }
 
 .line-textarea:hover {
@@ -584,8 +588,8 @@ body.inspector-hidden .inspector-panel {
 }
 
 .script-line[data-type="scene"] {
-  margin-top: 34px;
-  margin-bottom: 20px;
+  margin-top: 24px;
+  margin-bottom: 13px;
 }
 
 .script-line:first-child[data-type="scene"] {
@@ -600,7 +604,7 @@ body.inspector-hidden .inspector-panel {
 
 .script-line[data-type="character"] {
   width: 56%;
-  margin: 22px auto 5px;
+  margin: 15px auto 1px;
 }
 
 .script-line[data-type="character"] .line-textarea {
@@ -610,12 +614,12 @@ body.inspector-hidden .inspector-panel {
 
 .script-line[data-type="dialogue"] {
   width: 68%;
-  margin: 0 auto 16px;
+  margin: 0 auto 10px;
 }
 
 .script-line[data-type="parenthetical"] {
   width: 55%;
-  margin: 0 auto 3px;
+  margin: 0 auto 1px;
 }
 
 .script-line[data-type="parenthetical"] .line-textarea {
@@ -624,7 +628,7 @@ body.inspector-hidden .inspector-panel {
 
 .script-line[data-type="speaker-dialogue"] {
   width: 72%;
-  margin: 20px auto;
+  margin: 14px auto 10px;
   padding-left: 18px;
   border-left: 2px solid #dce8e5;
 }

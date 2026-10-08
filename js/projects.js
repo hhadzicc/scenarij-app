@@ -11,8 +11,10 @@
   const grid = document.getElementById("projectsGrid");
   const search = document.getElementById("scenarioSearch");
   const modal = document.getElementById("createScenarioModal");
+  const logoutModal = document.getElementById("logoutModal");
   const titleInput = document.getElementById("scenarioTitle");
   const confirmCreateButton = document.getElementById("confirmCreateButton");
+  const confirmLogoutButton = document.getElementById("confirmLogoutButton");
   const sidebarBackdrop = document.getElementById("sidebarBackdrop");
 
   function refreshIcons(root = document) {
@@ -71,17 +73,12 @@
 
   function renderAccount() {
     const sidebarAccount = document.getElementById("sidebarAccount");
-    const accountButton = document.getElementById("accountButton");
-    const mobileAccountButton = document.getElementById("mobileAccountButton");
 
     if (!state.user) {
       sidebarAccount.innerHTML = `
         <a class="account-login" href="${authUrl()}">
           <i data-lucide="log-in" aria-hidden="true"></i><span>Prijava</span>
         </a>`;
-      accountButton.href = authUrl();
-      accountButton.innerHTML = '<i data-lucide="log-in" aria-hidden="true"></i><span>Prijava</span>';
-      mobileAccountButton.href = authUrl();
       refreshIcons();
       return;
     }
@@ -93,14 +90,7 @@
         <span class="account-copy"><strong>${escapeHtml(state.user.name)}</strong><span>${escapeHtml(state.user.email)}</span></span>
         <button class="account-logout" type="button" data-logout aria-label="Odjava" title="Odjava"><i data-lucide="log-out" aria-hidden="true"></i></button>
       </div>`;
-    accountButton.href = "#account";
-    accountButton.innerHTML = `<span class="small-avatar">${escapeHtml(initial)}</span><span>${escapeHtml(state.user.name)}</span>`;
-    mobileAccountButton.href = "#account";
-    mobileAccountButton.innerHTML = `<span class="small-avatar">${escapeHtml(initial)}</span>`;
-    document.querySelectorAll('[href="#account"]').forEach((element) => {
-      element.addEventListener("click", (event) => event.preventDefault());
-    });
-    sidebarAccount.querySelector("[data-logout]").addEventListener("click", logout);
+    sidebarAccount.querySelector("[data-logout]").addEventListener("click", openLogoutModal);
     refreshIcons();
   }
 
@@ -178,9 +168,18 @@
     renderAccount();
   }
 
+  function openLogoutModal() {
+    closeSidebar();
+    logoutModal.showModal();
+  }
+
   async function logout() {
+    confirmLogoutButton.disabled = true;
+    confirmLogoutButton.querySelector("span").textContent = "Odjavljivanje...";
     try {
-      await fetch("/api/auth/logout", { method: "POST" });
+      const response = await fetch("/api/auth/logout", { method: "POST" });
+      if (!response.ok) throw new Error("Odjava trenutno nije uspjela.");
+      logoutModal.close();
       state.user = null;
       await loadScenarios();
       renderAccount();
@@ -188,6 +187,9 @@
       showToast("Uspješno si se odjavio.");
     } catch {
       showToast("Odjava trenutno nije uspjela.", "error");
+    } finally {
+      confirmLogoutButton.disabled = false;
+      confirmLogoutButton.querySelector("span").textContent = "Da, odjavi se";
     }
   }
 
@@ -262,6 +264,13 @@
   document.querySelectorAll("[data-close-create-modal]").forEach((button) => {
     button.addEventListener("click", () => modal.close());
   });
+  document.querySelectorAll("[data-close-logout-modal]").forEach((button) => {
+    button.addEventListener("click", () => logoutModal.close());
+  });
+  logoutModal.addEventListener("click", (event) => {
+    if (event.target === logoutModal) logoutModal.close();
+  });
+  confirmLogoutButton.addEventListener("click", logout);
   confirmCreateButton.addEventListener("click", createScenario);
   titleInput.addEventListener("keydown", (event) => {
     if (event.key === "Enter") {

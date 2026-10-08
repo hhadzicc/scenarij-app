@@ -36,13 +36,6 @@
         </a>
       </div>
 
-      <div class="sidebar-note">
-        <span class="connection-dot" aria-hidden="true"></span>
-        <div>
-          <strong>Radni prostor je online</strong>
-          <span>Promjene se čuvaju automatski</span>
-        </div>
-      </div>
     </aside>
 
     <div class="page-area">
@@ -52,9 +45,6 @@
         </button>
         <a class="mobile-brand" href="/">ScenarijPro</a>
         <div class="mobile-actions">
-          <a class="icon-button" id="mobileAccountButton" href="/auth?mode=login&next=/" aria-label="Korisnički račun">
-            <i data-lucide="user-round" aria-hidden="true"></i>
-          </a>
           <button class="icon-button accent" id="mobileCreateButton" type="button" aria-label="Novi scenarij">
             <i data-lucide="plus" aria-hidden="true"></i>
           </button>
@@ -69,10 +59,6 @@
             <p class="page-description">Nastavi pisanje ili započni novu priču.</p>
           </div>
           <div class="heading-actions">
-            <a class="secondary-button" id="accountButton" href="/auth?mode=login&next=/">
-              <i data-lucide="log-in" aria-hidden="true"></i>
-              <span>Prijava</span>
-            </a>
             <button class="primary-button" id="createScenarioButton" type="button">
               <i data-lucide="plus" aria-hidden="true"></i>
               <span>Novi scenarij</span>
@@ -137,6 +123,28 @@
         </button>
       </div>
     </form>
+  </dialog>
+
+  <dialog class="modal confirmation-modal" id="logoutModal" aria-labelledby="logoutTitle">
+    <div class="modal-content">
+      <div class="modal-heading">
+        <div>
+          <span class="modal-icon danger"><i data-lucide="log-out" aria-hidden="true"></i></span>
+          <h2 id="logoutTitle">Odjaviti se?</h2>
+          <p>Morat ćeš se ponovo prijaviti kako bi nastavio uređivati svoje scenarije.</p>
+        </div>
+        <button class="icon-button" type="button" data-close-logout-modal aria-label="Zatvori">
+          <i data-lucide="x" aria-hidden="true"></i>
+        </button>
+      </div>
+      <div class="modal-actions">
+        <button class="secondary-button" type="button" data-close-logout-modal>Ne, ostani</button>
+        <button class="danger-button" id="confirmLogoutButton" type="button">
+          <i data-lucide="log-out" aria-hidden="true"></i>
+          <span>Da, odjavi se</span>
+        </button>
+      </div>
+    </div>
   </dialog>
 
   <div class="toast-region" id="toastRegion" aria-live="polite" aria-atomic="true"></div>

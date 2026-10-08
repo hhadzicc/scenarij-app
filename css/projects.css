@@ -136,15 +136,6 @@ input:focus-visible {
   height: 19px;
 }
 
-.sidebar-note {
-  display: flex;
-  gap: 10px;
-  margin-top: 16px;
-  padding-top: 18px;
-  border-top: 1px solid #30343b;
-  color: var(--sidebar-muted);
-}
-
 .sidebar-account {
   margin-top: auto;
 }
@@ -164,8 +155,7 @@ input:focus-visible {
 .account-login:hover { background: #292d34; color: #fff; }
 .account-login svg { width: 18px; }
 
-.account-avatar,
-.small-avatar {
+.account-avatar {
   display: grid;
   place-items: center;
   border-radius: 50%;
@@ -175,7 +165,6 @@ input:focus-visible {
 }
 
 .account-avatar { width: 32px; height: 32px; flex: 0 0 auto; font-size: 12px; }
-.small-avatar { width: 24px; height: 24px; font-size: 10px; }
 
 .account-copy {
   display: grid;
@@ -209,31 +198,6 @@ input:focus-visible {
 
 .account-logout:hover { background: #30343b; color: #fff; }
 .account-logout svg { width: 16px; }
-
-.connection-dot {
-  width: 8px;
-  height: 8px;
-  flex: 0 0 auto;
-  margin-top: 5px;
-  border-radius: 50%;
-  background: #69cfb5;
-  box-shadow: 0 0 0 4px rgba(105, 207, 181, 0.12);
-}
-
-.sidebar-note div {
-  display: grid;
-  gap: 3px;
-}
-
-.sidebar-note strong {
-  color: #eef0f3;
-  font-size: 12px;
-}
-
-.sidebar-note span:last-child {
-  font-size: 11px;
-  line-height: 1.45;
-}
 
 .page-area {
   min-height: 100vh;
@@ -291,7 +255,8 @@ p {
 }
 
 .primary-button,
-.secondary-button {
+.secondary-button,
+.danger-button {
   display: inline-flex;
   min-height: 44px;
   align-items: center;
@@ -322,9 +287,26 @@ p {
 }
 
 .primary-button svg,
-.secondary-button svg {
+.secondary-button svg,
+.danger-button svg {
   width: 18px;
   height: 18px;
+}
+
+.danger-button {
+  border: 1px solid var(--danger);
+  background: var(--danger);
+  color: #fff;
+}
+
+.danger-button:hover {
+  border-color: #943737;
+  background: #943737;
+}
+
+.danger-button:disabled {
+  cursor: wait;
+  opacity: 0.7;
 }
 
 .project-tools {
@@ -632,6 +614,15 @@ p {
 
 .modal-icon svg {
   width: 21px;
+}
+
+.modal-icon.danger {
+  background: #f8e8e8;
+  color: var(--danger);
+}
+
+.confirmation-modal {
+  width: min(440px, calc(100% - 32px));
 }
 
 .modal-heading h2 {

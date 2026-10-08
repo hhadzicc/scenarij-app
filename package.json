@@ -1,6 +1,8 @@
 {
-  "name": "spirala3-scenarijpro",
+  "name": "scenarijpro",
   "version": "1.0.0",
+  "private": true,
+  "description": "Responsive screenplay writing workspace with private projects and public demos.",
   "main": "server.js",
   "type": "commonjs",
   "scripts": {
@@ -21,10 +23,5 @@
     "pg": "^8.16.3",
     "pg-hstore": "^2.3.4",
     "sequelize": "^6.37.7"
-  },
-  "devDependencies": {
-    "chai": "^6.2.2",
-    "mocha": "^11.7.5",
-    "supertest": "^7.2.2"
   }
 }
