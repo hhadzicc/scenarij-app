@@ -89,7 +89,8 @@ const Checkpoint = sequelize.define(
   {
     id: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
     scenarioId: { type: DataTypes.INTEGER, allowNull: false },
-    timestamp: { type: DataTypes.INTEGER, allowNull: false }
+    timestamp: { type: DataTypes.INTEGER, allowNull: false },
+    snapshot: { type: DataTypes.TEXT, allowNull: true }
   },
   {
     tableName: "Checkpoint",

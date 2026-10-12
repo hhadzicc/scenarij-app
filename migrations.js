@@ -12,6 +12,13 @@ async function columnExists(queryInterface, tableName, columnName) {
 async function runMigrations(sequelize) {
   const queryInterface = sequelize.getQueryInterface();
 
+  if (!(await columnExists(queryInterface, "Checkpoint", "snapshot"))) {
+    await queryInterface.addColumn("Checkpoint", "snapshot", {
+      type: DataTypes.TEXT,
+      allowNull: true
+    });
+  }
+
   if (!(await columnExists(queryInterface, "Scenario", "ownerId"))) {
     await queryInterface.addColumn("Scenario", "ownerId", {
       type: DataTypes.INTEGER,

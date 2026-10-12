@@ -13,6 +13,10 @@
     originalText: new Map(),
     saveTimers: new Map(),
     savingLines: new Set(),
+    savePromises: new Map(),
+    dirtyLines: new Map(),
+    saveQueue: Promise.resolve(),
+    editRevision: 0,
     titleTimer: null,
     pollingTimer: null,
     lastSince: Math.floor(Date.now() / 1000),
@@ -222,6 +226,8 @@
   }
 
   function scheduleLineSave(lineId, textarea, wrapper) {
+    state.editRevision += 1;
+    state.dirtyLines.set(lineId, { textarea, wrapper });
     if (state.saveTimers.has(lineId)) clearTimeout(state.saveTimers.get(lineId));
     setSaveState("saving", "Nesačuvane promjene");
     const timer = setTimeout(() => {
@@ -231,31 +237,55 @@
     state.saveTimers.set(lineId, timer);
   }
 
-  async function saveLine(lineId, textarea, wrapper) {
-    const value = normalizeText(textarea.value);
-    if (value === state.originalText.get(lineId) || state.savingLines.has(lineId)) return;
-
+  function saveLine(lineId, textarea, wrapper) {
+    const pending = state.savePromises.get(lineId);
+    if (pending) return pending;
     state.savingLines.add(lineId);
-    wrapper.classList.add("saving");
-    wrapper.classList.remove("save-error");
-    setSaveState("saving", "Spremanje...");
+    state.dirtyLines.set(lineId, { textarea, wrapper });
 
-    try {
-      await PoziviAjax.lockLine(scenarioId, lineId, state.userId);
-      await PoziviAjax.updateLine(scenarioId, lineId, state.userId, [value]);
-      state.originalText.set(lineId, value);
-      wrapper.classList.remove("saving");
-      state.savingLines.delete(lineId);
-      setSaveState("saved", "Sve promjene su sačuvane");
+    // One queue keeps the user's single line lock stable across concurrent saves.
+    const saving = state.saveQueue.then(async () => {
+      wrapper.classList.add("saving");
+      wrapper.classList.remove("save-error");
+      setSaveState("saving", "Spremanje...");
+      try {
+        while (normalizeText(textarea.value) !== state.originalText.get(lineId)) {
+          const value = normalizeText(textarea.value);
+          await PoziviAjax.lockLine(scenarioId, lineId, state.userId);
+          await PoziviAjax.updateLine(scenarioId, lineId, state.userId, [value]);
+          state.originalText.set(lineId, value);
+        }
+        state.dirtyLines.delete(lineId);
+        if (state.dirtyLines.size) {
+          setSaveState("saving", "Nesačuvane promjene");
+        } else {
+          setSaveState("saved", "Sve promjene su sačuvane");
+        }
+        return true;
+      } catch (error) {
+        wrapper.classList.add("save-error");
+        setSaveState("error", "Promjena nije sačuvana");
+        showToast(error.message || "Linija nije sačuvana.", "error");
+        return false;
+      } finally {
+        wrapper.classList.remove("saving");
+        state.savingLines.delete(lineId);
+        state.savePromises.delete(lineId);
+      }
+    });
+    state.savePromises.set(lineId, saving);
+    state.saveQueue = saving;
+    return saving;
+  }
 
-      const wordCount = (value.match(/[A-Za-zČĆŽŠĐčćžšđ0-9]+/g) || []).length;
-      if (wordCount > 20) await loadScenario({ preserveFocus: false });
-    } catch (error) {
-      wrapper.classList.remove("saving");
-      wrapper.classList.add("save-error");
-      state.savingLines.delete(lineId);
-      setSaveState("error", "Promjena nije sačuvana");
-      showToast(error.message || "Linija nije sačuvana.", "error");
+  async function flushPendingSaves() {
+    state.saveTimers.forEach((timer) => clearTimeout(timer));
+    state.saveTimers.clear();
+    const results = await Promise.all([...state.dirtyLines].map(([lineId, { textarea, wrapper }]) =>
+      saveLine(lineId, textarea, wrapper)
+    ));
+    if (results.some((saved) => !saved) || state.dirtyLines.size) {
+      throw new Error("Prvo sačuvaj promjene u tekstu.");
     }
   }
 
@@ -390,11 +420,13 @@
   }
 
   async function loadScenario(options = {}) {
+    const editRevision = state.editRevision;
     const activeLineId = options.preserveFocus
       ? document.activeElement?.closest?.(".script-line")?.dataset.lineId
       : null;
     try {
       const scenario = await PoziviAjax.getScenario(scenarioId);
+      if (state.editRevision !== editRevision || state.dirtyLines.size || state.savingLines.size) return false;
       state.scenario = scenario;
       titleInput.value = scenario.title;
       document.title = `${scenario.title} - ScenarijPro`;
@@ -404,6 +436,7 @@
         const textarea = documentElement.querySelector(`[data-line-id="${activeLineId}"] textarea`);
         textarea?.focus();
       }
+      return true;
     } catch (error) {
       documentElement.innerHTML = `
         <div class="document-error">
@@ -449,6 +482,7 @@
     };
     try {
       setSaveState("saving", "Dodavanje linije...");
+      await flushPendingSaves();
       const created = await PoziviAjax.addLine(scenarioId, templates[type] ?? "");
       await loadScenario();
       const textarea = documentElement.querySelector(`[data-line-id="${created.lineId}"] textarea`);
@@ -477,6 +511,7 @@
     button.disabled = true;
     button.textContent = "Preimenovanje...";
     try {
+      await flushPendingSaves();
       await PoziviAjax.lockCharacter(scenarioId, oldName, state.userId);
       await PoziviAjax.updateCharacter(scenarioId, state.userId, oldName, newName);
       renameModal.close();
@@ -492,12 +527,18 @@
 
   async function createCheckpoint() {
     if (!state.scenario?.canEdit) return;
+    const buttons = ["createCheckpointButton", "createCheckpointSecondaryButton"]
+      .map((id) => document.getElementById(id));
+    buttons.forEach((button) => { button.disabled = true; });
     try {
+      await flushPendingSaves();
       await PoziviAjax.createCheckpoint(scenarioId);
       await loadCheckpoints();
       showToast("Trenutna verzija je sačuvana.");
     } catch (error) {
       showToast(error.message || "Verzija nije sačuvana.", "error");
+    } finally {
+      buttons.forEach((button) => { button.disabled = false; });
     }
   }
 
@@ -585,12 +626,13 @@
   function startPolling() {
     clearInterval(state.pollingTimer);
     state.pollingTimer = setInterval(async () => {
-      if (state.savingLines.size || state.saveTimers.size || document.activeElement?.classList.contains("line-textarea")) return;
+      if (state.dirtyLines.size || state.savingLines.size || state.saveTimers.size || document.activeElement?.classList.contains("line-textarea")) return;
       try {
         const result = await PoziviAjax.getDeltas(scenarioId, state.lastSince);
         if (!result.deltas?.length) return;
-        state.lastSince = Math.max(state.lastSince, ...result.deltas.map((delta) => Number(delta.timestamp) || 0));
-        await loadScenario();
+        if (await loadScenario()) {
+          state.lastSince = Math.max(state.lastSince, ...result.deltas.map((delta) => Number(delta.timestamp) || 0));
+        }
       } catch {
         // Polling is best-effort; a later request retries automatically.
       }
@@ -641,7 +683,7 @@
   });
 
   window.addEventListener("beforeunload", (event) => {
-    if (state.saveTimers.size || state.savingLines.size) {
+    if (state.dirtyLines.size || state.saveTimers.size || state.savingLines.size) {
       event.preventDefault();
       event.returnValue = "";
     }

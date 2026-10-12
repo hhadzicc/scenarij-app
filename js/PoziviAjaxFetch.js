@@ -58,7 +58,7 @@
     },
 
     updateLine(scenarioId, lineId, userId, newText, callback) {
-      return request("PUT", `/api/scenarios/${scenarioId}/lines/${lineId}`, { userId, newText }, callback);
+      return request("PUT", `/api/scenarios/${scenarioId}/lines/${lineId}`, { userId, newText, preserveLine: true }, callback);
     },
 
     lockCharacter(scenarioId, characterName, userId, callback) {
